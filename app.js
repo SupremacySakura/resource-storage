@@ -11,7 +11,6 @@ const { showRequest } = require('./middlewares/index')
 const path = require('path')
 //导入路由
 const indexRouter = require('./routes/index')
-const corsOption = require('./config/cors.config')
 //创建app实例
 const app = new koa()
 //错误处理
