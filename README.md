@@ -1,3 +1,4 @@
+
 # 静态资源部署服务器
 
 ## 目录
@@ -42,9 +43,9 @@ node app.js
 
 ## 参数说明
 
-### 请求地址
+### 请求地址(上传文件)
 
-```text
+```
 <你的服务器域名>:<端口>/upload
 ```
 
@@ -72,6 +73,7 @@ FormData.getHeaders()
 ### 返回值
 
 返回一个 Promise 对象：
+
 ```javascript
 {
     message: 'File uploaded successfully!' |
@@ -81,3 +83,39 @@ FormData.getHeaders()
     code: 200 | 500,
     error?: error.message
 }
+```
+
+### 请求地址(获取上传文件路径)
+
+```
+<你的服务器域名>:<端口>/filePath
+```
+
+### 请求头
+
+```javascript
+// application/json
+```
+
+### 请求体格式
+
+- **application/json**
+- 包括的参数：
+
+```javascript
+{
+    extNameConfig:'all'   // 查询文件后缀名参数,默认值为'all',可选值'photo',也可传入后缀名数组,如['.html','.jpg']
+}
+```
+
+### 返回值
+
+返回一个 Promise 对象：
+
+```javascript
+{
+    message: 'Query successful!',
+    files: Array<string> | [], // 文件路径
+    code: 200,      // HTTP 状态码
+}
+```
