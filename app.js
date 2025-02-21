@@ -20,6 +20,7 @@ app.use(async (ctx, next) => {
   } catch (err) {
     ctx.status = err.status || 500
     ctx.body = err.message
+    console.error('Server Error:', err);
   }
 })
 app.use(compose([showRequest]))

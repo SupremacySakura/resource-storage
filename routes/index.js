@@ -3,7 +3,7 @@ const Router = require('@koa/router')
 const path = require('path')
 const fs = require('fs')
 const { koaBody } = require('koa-body')
-
+const { readFilesInDirectory } = require('../utils/index.js')
 //创建路由实例
 const router = new Router()
 const tempDir = path.join(__dirname, '.././temp')
@@ -67,4 +67,17 @@ router.post('/upload', koaBody({
     }
   }
 })
+// 获取 public 文件夹下所有图片文件的路径
+const publicDir = path.join(__dirname, '../public')
+//获取public下文件
+router.post('/filePath', async (ctx, next) => {
+  const extNameConfig = ctx.request.body.extNameConfig
+  const files = readFilesInDirectory(publicDir, extNameConfig)
+  ctx.body = {
+    message: 'Query successful!',
+    files: files,
+    code: 500,
+  }
+})
+
 module.exports = router
