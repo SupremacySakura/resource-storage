@@ -64,7 +64,7 @@ export class FileStorageService {
                 type: 'file',
                 hash,
                 name,
-                role: 'private',
+                role: 'public',
                 size,
                 chunkCount,
                 chunks: [{ index: chunkIndex, hash: chunkHash }],
@@ -148,9 +148,14 @@ export class FileStorageService {
         const meta = this.getMeta(hash)
         if (!meta) throw new Error('NOT_FOUND')
 
-        if (meta.role !== 'public' && meta.key !== key) {
+        // 当权限为密钥的时候
+        if (meta.role === 'key' && meta.key !== key) {
             throw new Error('FORBIDDEN')
         }
+
+        // if (meta.role === 'private' && !isLogin) {
+        //     throw new Error('FORBIDDEN')
+        // }
 
         const filePath = path.resolve(this.fileDir, meta.name)
         if (!fs.existsSync(filePath)) {
@@ -161,5 +166,23 @@ export class FileStorageService {
             meta,
             stream: fs.createReadStream(filePath),
         }
+    }
+
+    listFiles() {
+        let result = []
+        const dir = this.metaDir
+        if (!fs.existsSync(dir)) return []
+        const files = fs.readdirSync(dir)
+        for (const file of files) {
+            if (!file.endsWith('.json')) continue
+            const filepath = path.join(dir, file)
+            try {
+                const meta = fs.readJSONSync(filepath)
+                result.push(meta)
+            } catch (e) {
+                console.error(`Error reading meta file ${filepath}:`, e)
+            }
+        }
+        return result
     }
 }

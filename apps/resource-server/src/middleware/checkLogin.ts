@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import jwt from 'jsonwebtoken'
 
-export const authMiddleware = () => {
+export const authMiddleware = (block: boolean = true) => {
     return async (ctx: Koa.Context, next: Koa.Next) => {
         try {
             // 从请求头 Authorization 里拿 token，格式: Bearer <token>
@@ -14,9 +14,12 @@ export const authMiddleware = () => {
                 return
             }
             const payload = jwt.verify(token, process.env.SECRET || 'resource-storage-secret')
-            ctx.state.user = payload
+            ctx.state.token = token
             await next()
         } catch (error) {
+            if (!block) {
+                await next()
+            }
             console.error('认证中间件错误:', error)
             ctx.status = 401
             ctx.body = { message: '认证失败，登录凭证错误或过期' }

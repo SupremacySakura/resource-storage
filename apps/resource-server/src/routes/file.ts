@@ -3,7 +3,7 @@ import path from 'path'
 import koaBody from 'koa-body'
 import { authMiddleware } from '../middleware/checkLogin'
 import { FileStorageService } from '../services/file-storage'
-
+import jwt from 'jsonwebtoken'
 // 兜底地址
 const defaultMetaDir = path.join(__dirname, '../public/meta')
 const defaultChunkDir = path.join(__dirname, '../public/chunk')
@@ -23,10 +23,10 @@ const router = new Router({
 
 // 获取文件内容
 router.get('/read', async (ctx) => {
+    // 验证是否登录
     try {
         const { hash, key } = ctx.query as any
         const { meta, stream } = storage.getReadStream(hash, key)
-
         ctx.type = path.extname(meta.name)
         ctx.set(
             'Content-Disposition',
@@ -86,5 +86,15 @@ router.post('/merge', authMiddleware(), async (ctx) => {
         ctx.body = { success: false, message: e.message }
     }
 
+})
+
+// 获取所有文件，文件列表
+router.get('/all', authMiddleware(), async (ctx) => {
+    try {
+        const files = storage.listFiles()
+        ctx.body = { success: true, message: '获取文件列表成功', data: files }
+    } catch (e: any) {
+        ctx.body = { success: false, message: e.message }
+    }
 })
 export default router
