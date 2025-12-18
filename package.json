@@ -1,0 +1,12 @@
+{
+  "name": "resource-storage",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build"
+  },
+  "devDependencies": {
+    "turbo": "^2.6.3",
+    "typescript": "^5.0.0"
+  }
+}

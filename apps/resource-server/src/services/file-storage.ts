@@ -1,0 +1,165 @@
+import fs from 'fs-extra'
+import path from 'path'
+import { FileItem } from '../types/file'
+import { caculeMissingChunks } from '../utils'
+
+export class FileStorageService {
+    constructor(private metaDir: string, private chunkDir: string, private fileDir: string) {
+        fs.ensureDirSync(metaDir)
+        fs.ensureDirSync(chunkDir)
+        fs.ensureDirSync(fileDir)
+    }
+
+    getOptions() {
+        return {
+            metaDir: this.metaDir,
+            chunkDir: this.chunkDir,
+            fileDir: this.fileDir,
+        }
+    }
+
+    /* ========= meta ========= */
+
+    getMeta(hash: string): FileItem | null {
+        const metaPath = path.resolve(this.metaDir, `${hash}.json`)
+        if (!fs.existsSync(metaPath)) return null
+        return fs.readJsonSync(metaPath)
+    }
+
+    saveMeta(meta: FileItem) {
+        const metaPath = path.resolve(this.metaDir, `${meta.hash}.json`)
+        fs.writeJsonSync(metaPath, meta)
+    }
+
+    /* ========= chunk ========= */
+
+    getChunkPath(hash: string, index: number) {
+        return path.resolve(this.chunkDir, `${hash}-${index}`)
+    }
+
+    async saveChunk(hash: string, index: number, tempPath: string) {
+        const chunkPath = this.getChunkPath(hash, index)
+        await fs.move(tempPath, chunkPath, { overwrite: true })
+    }
+
+    /* ========= upload ========= */
+
+    async handleChunkUpload(file: any, body: any) {
+        const {
+            name,
+            hash,
+            size,
+            chunkCount,
+            chunkIndex,
+            chunkHash,
+            modifiedTime,
+        } = body
+
+        await this.saveChunk(hash, chunkIndex, file.filepath)
+
+        let meta = this.getMeta(hash)
+
+        if (!meta) {
+            meta = {
+                type: 'file',
+                hash,
+                name,
+                role: 'private',
+                size,
+                chunkCount,
+                chunks: [{ index: chunkIndex, hash: chunkHash }],
+                modifiedTime,
+            }
+        } else if (!meta.chunks.some(c => c.index === chunkIndex)) {
+            meta.chunks.push({ index: chunkIndex, hash: chunkHash })
+            meta.modifiedTime = modifiedTime
+        }
+
+        this.saveMeta(meta)
+
+        return {
+            chunkIndex,
+            chunkHash,
+        }
+    }
+
+    /* ========= init upload ========= */
+
+    checkUploadStatus(hash: string) {
+        const meta = this.getMeta(hash)
+        if (!meta) {
+            return { status: 'not-exist', missing: 'all' }
+        }
+
+        if (+meta.chunkCount !== meta.chunks.length) {
+            return {
+                status: 'missing',
+                missing: caculeMissingChunks(meta.chunks, meta.chunkCount),
+            }
+        }
+
+        return { status: 'complete', missing: [] }
+    }
+
+    /* ========= merge ========= */
+
+    async mergeFile(hash: string) {
+        const meta = this.getMeta(hash)
+        if (!meta) throw new Error('META_NOT_FOUND')
+
+        if (+meta.chunkCount !== meta.chunks.length) {
+            throw new Error('CHUNK_INCOMPLETE')
+        }
+
+        const filePath = path.resolve(this.fileDir, meta.name)
+        if (fs.existsSync(filePath)) return 'EXIST'
+
+        const chunks = meta.chunks.sort((a, b) => a.index - b.index)
+
+        const writeStream = fs.createWriteStream(filePath)
+
+        for (const chunk of chunks) {
+            const chunkPath = this.getChunkPath(hash, chunk.index)
+            if (!fs.existsSync(chunkPath)) {
+                throw new Error(`MISSING_CHUNK_${chunk.index}`)
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                const rs = fs.createReadStream(chunkPath)
+                rs.on('end', resolve)
+                rs.on('error', reject)
+                rs.pipe(writeStream, { end: false })
+            })
+        }
+
+        writeStream.end()
+
+        // 清理 chunk
+        for (const chunk of chunks) {
+            await fs.remove(this.getChunkPath(hash, chunk.index))
+        }
+
+        return 'MERGED'
+    }
+
+    /* ========= read ========= */
+
+    getReadStream(hash: string, key?: string) {
+        const meta = this.getMeta(hash)
+        if (!meta) throw new Error('NOT_FOUND')
+
+        if (meta.role !== 'public' && meta.key !== key) {
+            throw new Error('FORBIDDEN')
+        }
+
+        const filePath = path.resolve(this.fileDir, meta.name)
+        if (!fs.existsSync(filePath)) {
+            throw new Error('FILE_NOT_READY')
+        }
+
+        return {
+            meta,
+            stream: fs.createReadStream(filePath),
+        }
+    }
+}
