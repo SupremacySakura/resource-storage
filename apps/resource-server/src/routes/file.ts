@@ -3,7 +3,7 @@ import path from 'path'
 import koaBody from 'koa-body'
 import { authMiddleware } from '../middleware/checkLogin'
 import { FileStorageService } from '../services/file-storage'
-import jwt from 'jsonwebtoken'
+
 // 兜底地址
 const defaultMetaDir = path.join(__dirname, '../public/meta')
 const defaultChunkDir = path.join(__dirname, '../public/chunk')
@@ -97,4 +97,41 @@ router.get('/all', authMiddleware(), async (ctx) => {
         ctx.body = { success: false, message: e.message }
     }
 })
+
+// 修改文件权限
+router.post('/update-permission', authMiddleware(), async (ctx) => {
+    try {
+        const { fileHash, role } = ctx.request.body as { fileHash: string, role: 'public' | 'key' }
+        const result = storage.updateFilePermission(fileHash, role)
+
+        ctx.body = { success: true, message: result }
+    } catch (e: any) {
+        ctx.body = { success: false, message: e.message }
+    }
+})
+
+// 当文件权限为 key 时 生成一个密钥用于访问
+router.post('/generate-key', authMiddleware(), async (ctx) => {
+    try {
+        const { fileHash } = ctx.request.body as { fileHash: string }
+        const key = storage.generateKey(fileHash)
+
+        ctx.body = { success: true, message: '密钥生成成功', data: key }
+    } catch (e: any) {
+        ctx.body = { success: false, message: e.message }
+    }
+})
+
+// 删除文件及元信息
+router.post('/delete', authMiddleware(), async (ctx) => {
+    try {
+        const { fileHash } = ctx.request.body as { fileHash: string }
+        const result = storage.deleteFile(fileHash)
+
+        ctx.body = { success: true, message: result }
+    } catch (e: any) {
+        ctx.body = { success: false, message: e.message }
+    }
+})
+
 export default router

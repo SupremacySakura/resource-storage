@@ -1,3 +1,5 @@
+import { calculateHash } from '../../utils/hash'
+
 export const uploadFile = async (file: File, token: string) => {
     /* ================= 获取文件 ================= */
     if (!file) return
@@ -5,9 +7,11 @@ export const uploadFile = async (file: File, token: string) => {
     /* ================= 初始化上传 ================= */
     const chunkSize = 1024 * 1024 // 1MB
     const chunkCount = Math.ceil(file.size / chunkSize)
-    const fileHash = file.name
 
-    const initRes = await fetch('http://localhost:3001/api/file/init-upload', {
+    // Calculate SHA-256 hash of the file content
+    const fileHash = await calculateHash(file)
+
+    const initRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/init-upload`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -27,17 +31,17 @@ export const uploadFile = async (file: File, token: string) => {
 
             const formData = new FormData()
             formData.append('name', file.name)
-            formData.append('hash', file.name)
+            formData.append('hash', fileHash)
             formData.append('chunkCount', chunkCount.toString())
             formData.append('chunkIndex', i.toString())
-            formData.append('chunkHash', chunk.toString())
-            formData.append('size',file.size.toString())
-            formData.append('modifiedTime',Date.now().toString())
+            formData.append('chunkHash', await calculateHash(chunk))
+            formData.append('size', file.size.toString())
+            formData.append('modifiedTime', Date.now().toString())
             formData.append('file', chunk)
-           
+
 
             const uploadRes = await fetch(
-                'http://localhost:3001/api/file/upload',
+                `${import.meta.env.VITE_SERVER_URL}/api/file/upload`,
                 {
                     method: 'POST',
                     headers: {
@@ -47,12 +51,12 @@ export const uploadFile = async (file: File, token: string) => {
                 }
             )
 
-            const uploadData = await uploadRes.json()
+            await uploadRes.json()
         }
     }
 
     /* ================= 合并分片 ================= */
-    const mergeRes = await fetch('http://localhost:3001/api/file/merge', {
+    const mergeRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/merge`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -67,10 +71,49 @@ export const uploadFile = async (file: File, token: string) => {
 }
 
 export const getFileList = async (token: string) => {
-    const res = await fetch('http://localhost:3001/api/file/all', {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/all`, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
+    })
+    const data = await res.json()
+    return data
+}
+
+export const updateFilePermission = async (fileHash: string, role: 'public' | 'key', token: string) => {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/update-permission`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ fileHash, role }),
+    })
+    const data = await res.json()
+    return data
+}
+
+export const generateKey = async (fileHash: string, token: string) => {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/generate-key`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ fileHash }),
+    })
+    const data = await res.json()
+    return data
+}
+
+export const deleteFile = async (fileHash: string, token: string) => {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ fileHash }),
     })
     const data = await res.json()
     return data

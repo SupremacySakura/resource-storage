@@ -11,14 +11,18 @@ import {
     Folder,
     ArrowDown
 } from '@element-plus/icons-vue'
-
+import { useUserStore } from '../stores/user'
 const isCollapse = ref(false)
 const route = useRoute()
 const router = useRouter()
 
 const activeMenu = computed(() => route.path)
 
+
 const handleLogout = () => {
+    const userStore = useUserStore()
+    userStore.logout()
+    
     router.push('/login')
 }
 
@@ -34,11 +38,11 @@ const toggleCollapse = () => {
                 <el-icon class="logo-icon">
                     <Monitor />
                 </el-icon>
-                <span v-show="!isCollapse" class="logo-text">Resource Admin</span>
+                <span v-show="!isCollapse" class="logo-text">资源管理后台</span>
             </div>
             <el-menu :default-active="activeMenu" class="el-menu-vertical" :collapse="isCollapse" router
                 background-color="#ffffff" text-color="#4e5969" active-text-color="#0066ff">
-                <el-menu-item index="/home/welcome">
+                <el-menu-item index="/home/dashboard">
                     <el-icon>
                         <IconMenu />
                     </el-icon>
@@ -56,12 +60,12 @@ const toggleCollapse = () => {
                     <el-menu-item index="/home/files/upload">文件上传</el-menu-item>
                 </el-sub-menu>
 
-                <el-menu-item index="/home/settings">
+                <!-- <el-menu-item index="/home/settings">
                     <el-icon>
                         <Setting />
                     </el-icon>
                     <template #title>设置</template>
-                </el-menu-item>
+                </el-menu-item> -->
             </el-menu>
         </el-aside>
 
@@ -84,7 +88,7 @@ const toggleCollapse = () => {
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>Profile</el-dropdown-item>
+                                <!-- <el-dropdown-item>Profile</el-dropdown-item> -->
                                 <el-dropdown-item divided @click="handleLogout">Logout</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>

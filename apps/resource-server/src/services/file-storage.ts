@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { FileItem } from '../types/file'
 import { caculeMissingChunks } from '../utils'
+import { randomUUID } from 'crypto'
 
 export class FileStorageService {
     constructor(private metaDir: string, private chunkDir: string, private fileDir: string) {
@@ -184,5 +185,45 @@ export class FileStorageService {
             }
         }
         return result
+    }
+
+    updateFilePermission(hash: string, role: 'public' | 'key') {
+        const meta = this.getMeta(hash)
+        if (!meta) throw new Error('NOT_FOUND')
+
+        meta.role = role
+        this.saveMeta(meta)
+
+        return 'UPDATED'
+    }
+
+    generateKey(hash: string) {
+        const meta = this.getMeta(hash)
+        if (!meta) throw new Error('NOT_FOUND')
+
+        if (meta.role !== 'key') throw new Error('NOT_KEY_FILE')
+
+        meta.key = randomUUID()
+        this.saveMeta(meta)
+
+        return meta.key
+    }
+
+    async deleteFile(hash: string) {
+        const meta = this.getMeta(hash)
+        if (!meta) throw new Error('NOT_FOUND')
+
+        // 清理 chunk
+        for (const chunk of meta.chunks) {
+            await fs.remove(this.getChunkPath(hash, chunk.index))
+        }
+
+        // 清理 meta
+        await fs.remove(path.resolve(this.metaDir, `${hash}.json`))
+
+        // 清理文件
+        await fs.remove(path.resolve(this.fileDir, meta.name))
+        
+        return 'DELETED'
     }
 }

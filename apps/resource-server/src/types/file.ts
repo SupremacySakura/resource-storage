@@ -9,7 +9,7 @@ export interface ChunkItem {
 export interface FileItem {
     hash: string
     name: string
-    role: 'public' | 'private' | 'key'
+    role: 'public' | 'key'
     key?: string
     type: 'file'
     size: number

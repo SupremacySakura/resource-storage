@@ -6,9 +6,14 @@ export const useUserStore = defineStore("user", () => {
     const setToken = (newToken: string) => {
         token.value = newToken
     }
+
+    const logout = () => {
+        token.value = ''
+    }
     return {
         token,
-        setToken
+        setToken,
+        logout
     }
 }, {
     persist: true

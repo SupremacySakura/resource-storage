@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import Router from '@koa/router'
 import path from 'path'
 import jwt from 'jsonwebtoken'
+import { authMiddleware } from '../middleware/checkLogin'
 
 const router = new Router({
     prefix: '/auth' // 所有 auth 路由都会带上这个前缀
@@ -50,4 +51,12 @@ router.post('/login', async (ctx) => {
     }
 })
 
+// 验证登录
+router.get('/verify', authMiddleware(), async (ctx) => {
+    ctx.body = {
+        success: true,
+        message: '登录有效',
+        code: 200
+    }
+})
 export default router
