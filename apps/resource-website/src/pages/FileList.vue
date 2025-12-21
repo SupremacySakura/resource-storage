@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Picture, VideoCamera, Service, View, Lock, Key, Warning, CopyDocument, Close, Delete } from '@element-plus/icons-vue'
 import { getFileList, updateFilePermission, generateKey, deleteFile } from '../services/apis/files'
@@ -91,6 +91,47 @@ const isVideo = computed(() => {
     if (!selectedFile.value) return false
     const ext = selectedFile.value.name.split('.').pop()?.toLowerCase()
     return ['mp4', 'webm', 'ogg'].includes(ext || '')
+})
+
+const isText = computed(() => {
+    if (!selectedFile.value) return false
+    const ext = selectedFile.value.name.split('.').pop()?.toLowerCase() || ''
+    const textExts = [
+        'txt', 'md', 'markdown', 'json', 'xml', 'html', 'htm', 'css', 'scss', 'sass', 'less',
+        'js', 'ts', 'jsx', 'tsx', 'vue', 'svelte',
+        'py', 'java', 'c', 'cpp', 'h', 'hpp', 'cs', 'go', 'rs', 'php', 'rb', 'lua', 'pl', 'swift', 'kt',
+        'sh', 'bash', 'zsh', 'bat', 'cmd', 'ps1',
+        'yaml', 'yml', 'toml', 'ini', 'conf', 'properties', 'env',
+        'log', 'sql', 'graphql'
+    ]
+    return textExts.includes(ext)
+})
+
+const textContent = ref('')
+const loadingText = ref(false)
+
+watch(selectedFile, async (newFile) => {
+    if (newFile && isText.value) {
+        loadingText.value = true
+        textContent.value = ''
+        try {
+            const { hash, key } = newFile
+            const API_BASE = import.meta.env.VITE_SERVER_URL + '/api'
+            let url = `${API_BASE}/file/read?hash=${hash}`
+            if (key) url += `&key=${key}`
+
+            const res = await fetch(url)
+            if (res.ok) {
+                textContent.value = await res.text()
+            } else {
+                textContent.value = 'Failed to load file content: ' + res.statusText
+            }
+        } catch (e) {
+            textContent.value = 'Error loading file content.'
+        } finally {
+            loadingText.value = false
+        }
+    }
 })
 
 const formatDate = (value: string | number) => {
@@ -218,7 +259,7 @@ onMounted(() => {
 
 <template>
     <div class="list-container" v-loading="loading">
-        <el-row :gutter="20" class="full-height">
+        <el-row :gutter="0" class="full-height">
             <!-- Left: File List -->
             <el-col :span="6" class="col-list">
                 <el-card class="box-card full-height"
@@ -268,6 +309,9 @@ onMounted(() => {
                             <div class="preview-content">
                                 <img v-if="isImage" :src="previewUrl" class="preview-media" />
                                 <video v-else-if="isVideo" :src="previewUrl" controls class="preview-media"></video>
+                                <div v-else-if="isText" class="text-preview" v-loading="loadingText">
+                                    <pre><code>{{ textContent }}</code></pre>
+                                </div>
                                 <div v-else class="no-preview">
                                     <el-icon :size="64">
                                         <Document />
@@ -465,7 +509,7 @@ onMounted(() => {
 .list-container {
     height: 100%;
     padding: 0;
-    background-color: #f0f2f5;
+    background-color: transparent;
 }
 
 .full-height {
@@ -481,8 +525,13 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     border: none;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.col-list .box-card {
+    border-right: 1px solid #ebeef5;
 }
 
 .card-header {
@@ -491,6 +540,10 @@ onMounted(() => {
     align-items: center;
     font-weight: 600;
     color: #303133;
+    padding: 0 10px;
+    /* Add some horizontal padding to header */
+    height: 32px;
+    /* Ensure consistent height for alignment */
 }
 
 .header-actions {
@@ -597,6 +650,27 @@ onMounted(() => {
     max-height: 100%;
     object-fit: contain;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.text-preview {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: #f8fafc;
+    padding: 16px;
+    border-radius: 6px;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.text-preview pre {
+    margin: 0;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .no-preview {

@@ -1,6 +1,6 @@
 import { calculateHash } from '../../utils/hash'
 
-export const uploadFile = async (file: File, token: string) => {
+export const uploadFile = async (file: File, token: string, onProgress?: (percent: number) => void) => {
     /* ================= 获取文件 ================= */
     if (!file) return
 
@@ -10,6 +10,8 @@ export const uploadFile = async (file: File, token: string) => {
 
     // Calculate SHA-256 hash of the file content
     const fileHash = await calculateHash(file)
+
+    if (onProgress) onProgress(0)
 
     const initRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/init-upload`, {
         method: 'POST',
@@ -52,7 +54,18 @@ export const uploadFile = async (file: File, token: string) => {
             )
 
             await uploadRes.json()
+
+            if (onProgress) {
+                // Calculate progress based on uploaded chunks
+                // 95% is reserved for the final merge step
+                const percent = Math.round(((i + 1) / chunkCount) * 95)
+                onProgress(percent)
+            }
         }
+    } else {
+        // If not 'all', maybe instant complete (second pass) or partial? 
+        // Assuming instant for now if we skip the loop
+        if (onProgress) onProgress(95)
     }
 
     /* ================= 合并分片 ================= */
@@ -66,6 +79,9 @@ export const uploadFile = async (file: File, token: string) => {
     })
 
     const mergeData = await mergeRes.json()
+
+    if (onProgress) onProgress(100)
+
     console.log(mergeData)
     return mergeData
 }

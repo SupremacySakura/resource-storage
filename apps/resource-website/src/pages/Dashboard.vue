@@ -105,55 +105,55 @@ onMounted(() => {
 
 <template>
     <div class="dashboard-container" v-loading="loading">
-        <el-row :gutter="20" class="full-height">
-            <!-- Top: Metrics -->
-            <el-col :span="24">
-                <div class="metric-grid">
-                    <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                        <div class="metric-header">
-                            <el-icon class="metric-icon">
-                                <Document />
-                            </el-icon>
-                            <span>文件总数</span>
-                        </div>
-                        <div class="metric-value">{{ totalFiles }}</div>
-                        <div class="metric-sub">已完成上传：{{ completedCount }} / {{ totalFiles }}</div>
-                    </el-card>
-                    <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                        <div class="metric-header">
-                            <el-icon class="metric-icon">
-                                <Service />
-                            </el-icon>
-                            <span>存储占用</span>
-                        </div>
-                        <div class="metric-value">{{ formatSize(totalSize) }}</div>
-                        <div class="metric-sub">平均大小：{{ formatSize(avgSize) }}</div>
-                    </el-card>
-                    <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                        <div class="metric-header">
-                            <el-icon class="metric-icon">
-                                <View />
-                            </el-icon>
-                            <span>公开文件</span>
-                        </div>
-                        <div class="metric-value">{{ publicCount }}</div>
-                        <el-progress :percentage="privacyPublicPercent" :stroke-width="8" status="success" />
-                    </el-card>
-                    <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                        <div class="metric-header">
-                            <el-icon class="metric-icon">
-                                <Lock />
-                            </el-icon>
-                            <span>密钥文件</span>
-                        </div>
-                        <div class="metric-value">{{ keyCount }}</div>
-                        <el-progress :percentage="privacyKeyPercent" :stroke-width="8" status="warning" />
-                    </el-card>
-                </div>
-            </el-col>
+        <!-- Top: Metrics -->
+        <div class="section-block">
+            <div class="metric-grid">
+                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
+                    <div class="metric-header">
+                        <el-icon class="metric-icon">
+                            <Document />
+                        </el-icon>
+                        <span>文件总数</span>
+                    </div>
+                    <div class="metric-value">{{ totalFiles }}</div>
+                    <div class="metric-sub">已完成上传：{{ completedCount }} / {{ totalFiles }}</div>
+                </el-card>
+                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
+                    <div class="metric-header">
+                        <el-icon class="metric-icon">
+                            <Service />
+                        </el-icon>
+                        <span>存储占用</span>
+                    </div>
+                    <div class="metric-value">{{ formatSize(totalSize) }}</div>
+                    <div class="metric-sub">平均大小：{{ formatSize(avgSize) }}</div>
+                </el-card>
+                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
+                    <div class="metric-header">
+                        <el-icon class="metric-icon">
+                            <View />
+                        </el-icon>
+                        <span>公开文件</span>
+                    </div>
+                    <div class="metric-value">{{ publicCount }}</div>
+                    <el-progress :percentage="privacyPublicPercent" :stroke-width="8" status="success" />
+                </el-card>
+                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
+                    <div class="metric-header">
+                        <el-icon class="metric-icon">
+                            <Lock />
+                        </el-icon>
+                        <span>密钥文件</span>
+                    </div>
+                    <div class="metric-value">{{ keyCount }}</div>
+                    <el-progress :percentage="privacyKeyPercent" :stroke-width="8" status="warning" />
+                </el-card>
+            </div>
+        </div>
 
-            <!-- Middle: Overview -->
-            <el-col :span="12" class="col-block">
+        <!-- Middle: Overview -->
+        <div class="section-block two-columns">
+            <div class="column-item">
                 <el-card class="box-card" :body-style="{ padding: '20px' }">
                     <template #header>
                         <div class="card-header">
@@ -204,8 +204,8 @@ onMounted(() => {
                         </div>
                     </div>
                 </el-card>
-            </el-col>
-            <el-col :span="12" class="col-block">
+            </div>
+            <div class="column-item">
                 <el-card class="box-card" :body-style="{ padding: '20px' }">
                     <template #header>
                         <div class="card-header">
@@ -237,45 +237,44 @@ onMounted(() => {
                         </div>
                     </div>
                 </el-card>
-            </el-col>
+            </div>
+        </div>
 
-            <!-- Bottom: Recent Files -->
-            <el-col :span="24" class="col-block">
-                <el-card class="box-card" :body-style="{ padding: '0px' }">
-                    <template #header>
-                        <div class="card-header">
-                            <span>最近文件</span>
-                            <el-button link type="primary" @click="fetchFiles">刷新</el-button>
-                        </div>
-                    </template>
-                    <div v-if="recentFiles.length === 0" class="empty-list">暂无数据</div>
-                    <el-table v-else :data="recentFiles" border style="width: 100%">
-                        <el-table-column prop="name" label="文件名" min-width="220" />
-                        <el-table-column prop="size" label="大小" width="120">
-                            <template #default="{ row }">{{ formatSize(row.size) }}</template>
-                        </el-table-column>
-                        <el-table-column prop="role" label="权限" width="120">
-                            <template #default="{ row }">
-                                <el-tag :type="row.role === 'public' ? 'success' : 'warning'" size="small"
-                                    effect="dark">
-                                    {{ row.role === 'public' ? '公开' : '密钥' }}
-                                </el-tag>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="modifiedTime" label="修改时间" width="180">
-                            <template #default="{ row }">{{ formatDate(row.modifiedTime) }}</template>
-                        </el-table-column>
-                        <el-table-column label="类型" width="120">
-                            <template #default="{ row }">
-                                <el-icon>
-                                    <component :is="getFileIcon(row.name)" />
-                                </el-icon>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </el-card>
-            </el-col>
-        </el-row>
+        <!-- Bottom: Recent Files -->
+        <div class="section-block">
+            <el-card class="box-card" :body-style="{ padding: '0px' }">
+                <template #header>
+                    <div class="card-header">
+                        <span>最近文件</span>
+                        <el-button link type="primary" @click="fetchFiles">刷新</el-button>
+                    </div>
+                </template>
+                <div v-if="recentFiles.length === 0" class="empty-list">暂无数据</div>
+                <el-table v-else :data="recentFiles" border style="width: 100%">
+                    <el-table-column prop="name" label="文件名" min-width="220" />
+                    <el-table-column prop="size" label="大小" width="120">
+                        <template #default="{ row }">{{ formatSize(row.size) }}</template>
+                    </el-table-column>
+                    <el-table-column prop="role" label="权限" width="120">
+                        <template #default="{ row }">
+                            <el-tag :type="row.role === 'public' ? 'success' : 'warning'" size="small" effect="dark">
+                                {{ row.role === 'public' ? '公开' : '密钥' }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="modifiedTime" label="修改时间" width="180">
+                        <template #default="{ row }">{{ formatDate(row.modifiedTime) }}</template>
+                    </el-table-column>
+                    <el-table-column label="类型" width="120" fixed="right">
+                        <template #default="{ row }">
+                            <el-icon>
+                                <component :is="getFileIcon(row.name)" />
+                            </el-icon>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-card>
+        </div>
     </div>
 </template>
 
@@ -283,19 +282,24 @@ onMounted(() => {
 <style lang="scss" scoped>
 .dashboard-container {
     height: 100%;
-    padding: 0;
-    background-color: #f0f2f5;
-}
-
-.full-height {
-    height: 100%;
+    padding: 20px;
+    padding-bottom: 60px;
+    /* Ensure space at bottom for scrolling */
+    background-color: transparent;
+    overflow-y: auto;
 }
 
 .box-card {
-    border: none;
+    border: 1px solid #ebeef5;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: #dcdfe6;
+    }
 }
+
 
 .card-header {
     display: flex;
@@ -336,8 +340,19 @@ onMounted(() => {
     color: #909399;
 }
 
-.col-block {
-    margin-top: 20px;
+.section-block {
+    margin-bottom: 20px;
+}
+
+.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.column-item {
+    min-width: 0;
+    /* Prevent grid blowout */
 }
 
 .overview-grid {
