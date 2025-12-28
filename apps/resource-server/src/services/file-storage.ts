@@ -29,7 +29,7 @@ export class FileStorageService {
 
     saveMeta(meta: FileItem) {
         const metaPath = path.resolve(this.metaDir, `${meta.hash}.json`)
-        fs.writeJsonSync(metaPath, meta)
+        fs.writeJsonSync(metaPath, meta, { spaces: 2 })
     }
 
     /* ========= chunk ========= */
@@ -50,6 +50,7 @@ export class FileStorageService {
             name,
             hash,
             size,
+            path = './',
             chunkCount,
             chunkIndex,
             chunkHash,
@@ -65,6 +66,7 @@ export class FileStorageService {
                 type: 'file',
                 hash,
                 name,
+                path,
                 role: 'public',
                 size,
                 chunkCount,
@@ -112,9 +114,9 @@ export class FileStorageService {
             throw new Error('CHUNK_INCOMPLETE')
         }
 
-        const filePath = path.resolve(this.fileDir, meta.name)
+        const filePath = path.resolve(this.fileDir, meta.path, meta.name)
         if (fs.existsSync(filePath)) return 'EXIST'
-
+        if(!fs.existsSync(path.resolve(this.fileDir, meta.path))) fs.mkdirSync(path.resolve(this.fileDir, meta.path),{ recursive: true })
         const chunks = meta.chunks.sort((a, b) => a.index - b.index)
 
         const writeStream = fs.createWriteStream(filePath)
@@ -158,7 +160,7 @@ export class FileStorageService {
         //     throw new Error('FORBIDDEN')
         // }
 
-        const filePath = path.resolve(this.fileDir, meta.name)
+        const filePath = path.resolve(this.fileDir, meta.path, meta.name)
         if (!fs.existsSync(filePath)) {
             throw new Error('FILE_NOT_READY')
         }
@@ -222,8 +224,7 @@ export class FileStorageService {
         await fs.remove(path.resolve(this.metaDir, `${hash}.json`))
 
         // 清理文件
-        await fs.remove(path.resolve(this.fileDir, meta.name))
-        
+        await fs.remove(path.resolve(this.fileDir, meta.path, meta.name))
         return 'DELETED'
     }
 }

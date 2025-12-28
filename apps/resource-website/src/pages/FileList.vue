@@ -1,21 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Document, Picture, VideoCamera, Service, View, Lock, Key, Warning, CopyDocument, Close, Delete } from '@element-plus/icons-vue'
+import { Document, View, Lock, Key, Warning, CopyDocument, Close, Delete, Folder, CaretRight } from '@element-plus/icons-vue'
 import { getFileList, updateFilePermission, generateKey, deleteFile } from '../services/apis/files'
 import { useUserStore } from '../stores/user'
+import { formatSize, getFileIcon, isImageExt, isVideoExt, isTextExt, getIconColor } from '../utils/file'
+import { formatDate } from '../utils/common'
+import type { FileItem } from '../types/file'
 
-interface FileItem {
-    hash: string
-    name: string
-    role: 'public' | 'key'
-    key?: string
-    type: 'file'
-    size: number
-    chunkCount: number
-    chunks: any[]
-    modifiedTime: string
-}
 
 const userStore = useUserStore()
 const fileList = ref<FileItem[]>([])
@@ -30,13 +22,91 @@ const deleting = ref(false)
 const generatedKey = ref<string>('')
 const infoVisible = ref(false)
 
+const expandedDirs = ref<Set<string>>(new Set())
+
+const toggleDir = (dirPath: string) => {
+    if (expandedDirs.value.has(dirPath)) {
+        expandedDirs.value.delete(dirPath)
+    } else {
+        expandedDirs.value.add(dirPath)
+    }
+}
+
+const displayItems = computed(() => {
+    const root: any = { children: {} }
+
+    fileList.value.forEach(file => {
+        let p = file.path || './'
+        if (p.startsWith('./')) p = p.slice(2)
+        if (p === '.') p = ''
+        if (p.endsWith('/')) p = p.slice(0, -1)
+
+        const parts = p ? p.split('/') : []
+
+        let current = root
+        let currentPath = ''
+
+        parts.forEach(part => {
+            if (!part) return
+            if (!current.children[part]) {
+                const newPath = currentPath ? `${currentPath}/${part}` : part
+                current.children[part] = {
+                    name: part,
+                    isDir: true,
+                    children: {},
+                    fullPath: newPath
+                }
+            }
+            current = current.children[part]
+            currentPath = current.fullPath
+        })
+
+        current.children[file.name] = {
+            name: file.name,
+            isDir: false,
+            file: file
+        }
+    })
+
+    const result: any[] = []
+    const flatten = (node: any, level: number) => {
+        const children = Object.values(node.children || {}).sort((a: any, b: any) => {
+            if (a.isDir && !b.isDir) return -1
+            if (!a.isDir && b.isDir) return 1
+            return a.name.localeCompare(b.name)
+        })
+
+        children.forEach((child: any) => {
+            result.push({
+                ...child,
+                level,
+                key: child.isDir ? `dir-${child.fullPath}` : `file-${child.file.hash}`
+            })
+
+            if (child.isDir && expandedDirs.value.has(child.fullPath)) {
+                flatten(child, level + 1)
+            }
+        })
+    }
+
+    flatten(root, 0)
+    return result
+})
+
+const handleItemClick = (item: any) => {
+    if (item.isDir) {
+        toggleDir(item.fullPath)
+    } else {
+        handleSelect(item.file)
+    }
+}
+
 const fetchFiles = async () => {
     loading.value = true
     try {
         const res = await getFileList(userStore.token)
         if (res.success) {
             fileList.value = res.data
-            console.log(res.data)
         } else {
             ElMessage.error(res.message || 'Failed to fetch file list')
         }
@@ -54,22 +124,6 @@ const handleSelect = (file: FileItem) => {
     generatedKey.value = file.key || ''
 }
 
-const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const getFileIcon = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase()
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return Picture
-    if (['mp4', 'webm', 'ogg'].includes(ext || '')) return VideoCamera
-    if (['mp3', 'wav'].includes(ext || '')) return Service
-    return Document
-}
-
 const previewUrl = computed(() => {
     if (!selectedFile.value) return ''
     const { hash, key } = selectedFile.value
@@ -83,30 +137,19 @@ const previewUrl = computed(() => {
 
 const isImage = computed(() => {
     if (!selectedFile.value) return false
-    const ext = selectedFile.value.name.split('.').pop()?.toLowerCase()
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')
+    return isImageExt(selectedFile.value.name)
 })
 
 const isVideo = computed(() => {
     if (!selectedFile.value) return false
-    const ext = selectedFile.value.name.split('.').pop()?.toLowerCase()
-    return ['mp4', 'webm', 'ogg'].includes(ext || '')
+    return isVideoExt(selectedFile.value.name)
 })
 
 const isText = computed(() => {
     if (!selectedFile.value) return false
-    const ext = selectedFile.value.name.split('.').pop()?.toLowerCase() || ''
-    const textExts = [
-        'txt', 'md', 'markdown', 'json', 'xml', 'html', 'htm', 'css', 'scss', 'sass', 'less',
-        'js', 'ts', 'jsx', 'tsx', 'vue', 'svelte',
-        'py', 'java', 'c', 'cpp', 'h', 'hpp', 'cs', 'go', 'rs', 'php', 'rb', 'lua', 'pl', 'swift', 'kt',
-        'sh', 'bash', 'zsh', 'bat', 'cmd', 'ps1',
-        'yaml', 'yml', 'toml', 'ini', 'conf', 'properties', 'env',
-        'log', 'sql', 'graphql'
-    ]
-    return textExts.includes(ext)
+    return isTextExt(selectedFile.value.name)
 })
-
+       
 const textContent = ref('')
 const loadingText = ref(false)
 
@@ -133,19 +176,6 @@ watch(selectedFile, async (newFile) => {
         }
     }
 })
-
-const formatDate = (value: string | number) => {
-    if (!value) return ''
-
-    let ts = typeof value === 'string' ? Number(value.trim()) : value
-
-    // 如果是秒级时间戳（10位），转成毫秒
-    if (ts < 1e12) ts *= 1000
-
-    const date = new Date(ts)
-
-    return isNaN(date.getTime()) ? '' : date.toLocaleString()
-}
 
 const openOperation = () => {
     if (!selectedFile.value) {
@@ -251,10 +281,10 @@ const copyKey = async () => {
     }
 }
 
-
 onMounted(() => {
     fetchFiles()
 })
+
 </script>
 
 <template>
@@ -274,12 +304,19 @@ onMounted(() => {
                         No files found.
                     </div>
                     <ul v-else class="file-list-ul">
-                        <li v-for="file in fileList" :key="file.hash"
-                            :class="{ active: selectedFile?.hash === file.hash }" @click="handleSelect(file)">
-                            <el-icon class="file-icon">
-                                <component :is="getFileIcon(file.name)" />
+                        <li v-for="item in displayItems" :key="item.key"
+                            :class="{ active: !item.isDir && selectedFile?.hash === item.file.hash }"
+                            @click="handleItemClick(item)" :style="{ paddingLeft: (12 + item.level * 20) + 'px' }">
+                            <span class="caret-wrapper">
+                                <el-icon v-if="item.isDir" class="caret-icon"
+                                    :class="{ expanded: expandedDirs.has(item.fullPath) }">
+                                    <CaretRight />
+                                </el-icon>
+                            </span>
+                            <el-icon class="file-icon" :style="{ color: getIconColor(item.name) }">
+                                <component :is="item.isDir ? Folder : getFileIcon(item.name)" />
                             </el-icon>
-                            <span class="file-name" :title="file.name">{{ file.name }}</span>
+                            <span class="file-name" :title="item.name">{{ item.name }}</span>
                         </li>
                     </ul>
                 </el-card>
@@ -477,6 +514,7 @@ onMounted(() => {
                         <span class="text-strong">{{ selectedFile.name }}</span>
                     </el-descriptions-item>
                     <el-descriptions-item label="文件大小">{{ formatSize(selectedFile.size) }}</el-descriptions-item>
+                    <el-descriptions-item label="文件地址">{{ selectedFile.path }}</el-descriptions-item>
                     <el-descriptions-item label="权限">
                         <el-tag :type="selectedFile.role === 'public' ? 'success' : 'warning'" size="small"
                             effect="dark">
@@ -554,37 +592,66 @@ onMounted(() => {
 /* File List Styles */
 .file-list-ul {
     list-style: none;
-    padding: 10px;
+    padding: 8px;
     margin: 0;
 }
 
 .file-list-ul li {
-    padding: 12px 16px;
-    margin-bottom: 4px;
+    padding: 8px 12px;
+    margin-bottom: 2px;
     cursor: pointer;
     border-radius: 6px;
     display: flex;
     align-items: center;
-    transition: all 0.2s ease;
-    color: #606266;
+    transition: all 0.1s ease;
+    color: #1f2329;
+    font-size: 14px;
+    height: 36px;
+    box-sizing: border-box;
 }
 
 .file-list-ul li:hover {
-    background-color: #f5f7fa;
-    color: #303133;
+    background-color: #eff0f1;
+    color: #1f2329;
 }
 
 .file-list-ul li.active {
-    background-color: #ecf5ff;
-    color: #409EFF;
+    background-color: #e4f2ff;
+    color: #0066cc;
     font-weight: 500;
 }
 
-.file-icon {
-    margin-right: 12px;
-    font-size: 20px;
+.caret-wrapper {
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    margin-right: 2px;
+    color: #8f959e;
+    flex-shrink: 0;
+}
+
+.caret-icon {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.caret-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.file-icon {
+    margin-right: 8px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+/* Specific icon colors if needed, but getFileIcon handles type logic. 
+   We can style the icon wrapper color here if we want generic folder color */
+.file-icon :deep(svg) {
+    /* Ensure svg inherits color */
 }
 
 .file-name {
@@ -593,6 +660,7 @@ onMounted(() => {
     white-space: nowrap;
     flex: 1;
     font-size: 14px;
+    line-height: 20px;
 }
 
 .empty-list,

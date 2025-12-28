@@ -1,54 +1,19 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Document, Picture, VideoCamera, Service, UploadFilled, Close } from '@element-plus/icons-vue'
+import { UploadFilled, Close, Folder } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { uploadFile } from '../services/apis/files'
-
-interface UploadFileItem {
-    id: number
-    file: File
-    name: string
-    size: number
-    status: 'pending' | 'uploading' | 'success' | 'error'
-    progress: number
-    message?: string
-}
+import { formatSize, getFileIcon, getIconColor } from '../utils/file'
+import type { UploadFileItem } from '../types/file'
 
 const userStore = useUserStore()
 const fileInput = ref<HTMLInputElement | null>(null)
 const uploadList = ref<UploadFileItem[]>([])
 const isDragging = ref(false)
+const uploadPath = ref('./')
 
-// Format file size
-const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-// Get file icon based on extension
-const getFileIcon = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase()
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return Picture
-    if (['mp4', 'webm', 'ogg'].includes(ext || '')) return VideoCamera
-    if (['mp3', 'wav'].includes(ext || '')) return Service
-    return Document
-}
-
-// Get file icon color
-const getIconColor = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase()
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return '#409eff'
-    if (['mp4', 'webm', 'ogg'].includes(ext || '')) return '#f56c6c'
-    if (['mp3', 'wav'].includes(ext || '')) return '#e6a23c'
-    if (['doc', 'docx', 'pdf', 'txt', 'md'].includes(ext || '')) return '#409eff'
-    return '#909399'
-}
-
-// Handle file selection
+// 处理文件选择
 const handleFiles = (files: FileList | null) => {
     if (!files) return
 
@@ -111,7 +76,7 @@ const processUpload = async (item: UploadFileItem) => {
     item.message = 'Preparing...'
 
     try {
-        const res = await uploadFile(item.file, userStore.token, (percent) => {
+        const res = await uploadFile(item.file, userStore.token, uploadPath.value || './', (percent) => {
             item.progress = percent
             if (percent < 100) {
                 item.message = `Uploading... ${percent}%`
@@ -156,6 +121,10 @@ const uploadAll = async () => {
             <div class="header-section">
                 <h2>文件上传</h2>
                 <p class="subtitle">支持大文件分片上传，拖拽文件至下方区域即可添加</p>
+                <div class="path-input-wrapper">
+                    <el-input v-model="uploadPath" placeholder="设置上传目录（默认根目录 ./）" :prefix-icon="Folder"
+                        class="custom-input" />
+                </div>
             </div>
 
             <!-- Drop Zone -->
@@ -208,10 +177,10 @@ const uploadAll = async () => {
                         <div class="file-status">
                             <span v-if="item.status === 'pending'" class="status-text pending">等待上传</span>
                             <span v-else-if="item.status === 'uploading'" class="status-text uploading">{{ item.message
-                            }}</span>
+                                }}</span>
                             <span v-else-if="item.status === 'success'" class="status-text success">上传成功</span>
                             <span v-else-if="item.status === 'error'" class="status-text error">{{ item.message
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
 
@@ -255,6 +224,36 @@ const uploadAll = async () => {
     font-size: 14px;
     color: #86909c;
     margin: 0;
+}
+
+.path-input-wrapper {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.custom-input {
+    width: 360px;
+}
+
+.custom-input :deep(.el-input__wrapper) {
+    background-color: #f7f8fa;
+    box-shadow: none;
+    border: 1px solid #e5e6eb;
+    border-radius: 8px;
+    padding: 6px 12px;
+    transition: all 0.2s;
+}
+
+.custom-input :deep(.el-input__wrapper:hover) {
+    background-color: #f2f3f5;
+    border-color: #c9cdd4;
+}
+
+.custom-input :deep(.el-input__wrapper.is-focus) {
+    background-color: #ffffff;
+    border-color: #0066ff;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
 }
 
 /* Drop Zone */

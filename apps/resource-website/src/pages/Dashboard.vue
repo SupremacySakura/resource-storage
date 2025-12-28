@@ -4,18 +4,9 @@ import { Document, Picture, VideoCamera, Service, View, Lock } from '@element-pl
 import { getFileList } from '../services/apis/files'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
-
-interface FileItem {
-    hash: string
-    name: string
-    role: 'public' | 'key'
-    key?: string
-    type: 'file'
-    size: number
-    chunkCount: number
-    chunks: any[]
-    modifiedTime: string
-}
+import type { FileItem } from '../types/file'
+import { formatSize,getExt,getFileIcon, isAudioExt, isImageExt, isVideoExt } from '../utils/file'
+import { formatDate } from '../utils/common'
 
 const userStore = useUserStore()
 const fileList = ref<FileItem[]>([])
@@ -35,35 +26,6 @@ const fetchFiles = async () => {
     } finally {
         loading.value = false
     }
-}
-
-const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const formatDate = (value: string | number) => {
-    if (!value) return ''
-    let ts = typeof value === 'string' ? Number(value.trim()) : value
-    if (ts < 1e12) ts *= 1000
-    const date = new Date(ts)
-    return isNaN(date.getTime()) ? '' : date.toLocaleString()
-}
-
-const getExt = (filename: string) => filename.split('.').pop()?.toLowerCase() || ''
-const isImageExt = (ext: string) => ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
-const isVideoExt = (ext: string) => ['mp4', 'webm', 'ogg'].includes(ext)
-const isAudioExt = (ext: string) => ['mp3', 'wav'].includes(ext)
-
-const getFileIcon = (filename: string) => {
-    const ext = getExt(filename)
-    if (isImageExt(ext)) return Picture
-    if (isVideoExt(ext)) return VideoCamera
-    if (isAudioExt(ext)) return Service
-    return Document
 }
 
 const totalFiles = computed(() => fileList.value.length)

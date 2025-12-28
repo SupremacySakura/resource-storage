@@ -1,6 +1,6 @@
 import { calculateHash } from '../../utils/hash'
 
-export const uploadFile = async (file: File, token: string, onProgress?: (percent: number) => void) => {
+export const uploadFile = async (file: File, token: string, path: string = './', onProgress?: (percent: number) => void) => {
     /* ================= 获取文件 ================= */
     if (!file) return
 
@@ -40,7 +40,7 @@ export const uploadFile = async (file: File, token: string, onProgress?: (percen
             formData.append('size', file.size.toString())
             formData.append('modifiedTime', Date.now().toString())
             formData.append('file', chunk)
-
+            formData.append('path', path)
 
             const uploadRes = await fetch(
                 `${import.meta.env.VITE_SERVER_URL}/api/file/upload`,

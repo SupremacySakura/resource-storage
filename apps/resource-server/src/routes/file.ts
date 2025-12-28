@@ -65,7 +65,7 @@ router.post('/upload', authMiddleware(), koaBody({
 
 // 初始化上传
 router.post('/init-upload', authMiddleware(), async (ctx) => {
-    const { fileHash } = ctx.request.body as { fileHash: string }
+    const { fileHash, path } = ctx.request.body as { fileHash: string, path: string }
     const result = storage.checkUploadStatus(fileHash)
 
     ctx.body = {
