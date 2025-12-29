@@ -1,4 +1,4 @@
-import { Picture, Service, VideoCamera } from "@element-plus/icons-vue"
+import { Picture, Service, VideoCamera, Document as DocumentIcon } from "@element-plus/icons-vue"
 
 /**
  * 格式化文件大小
@@ -30,7 +30,7 @@ export const getFileIcon = (filename: string) => {
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return Picture
     if (['mp4', 'webm', 'ogg'].includes(ext || '')) return VideoCamera
     if (['mp3', 'wav'].includes(ext || '')) return Service
-    return Document
+    return DocumentIcon
 }
 
 /**
