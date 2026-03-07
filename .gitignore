@@ -11,3 +11,7 @@ pnpm-debug.log*
 .idea
 .vscode
 coverage
+
+# TurboRepo
+.turbo
+
