@@ -2,7 +2,7 @@ import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } fro
 import { useUserStore } from "../stores/user"
 import { checkLogin } from "../services/apis/login"
 
-const authGuard = async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+const authGuard = async (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
     const userStore = useUserStore()
     if (!userStore.token) {
         next('/login')

@@ -15,3 +15,12 @@ coverage
 # TurboRepo
 .turbo
 
+# Docker data
+data/
+
+# Secrets (certificates, keys)
+secrets/*
+!secrets/example
+
+
+

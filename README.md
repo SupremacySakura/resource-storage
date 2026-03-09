@@ -74,6 +74,54 @@ pnpm dev
 - 服务端默认运行在: `http://localhost:3001`
 - Web 端默认运行在: `http://localhost:5173`
 
+### 5. Docker 部署
+
+如果你想使用 Docker Compose 一键启动所有服务：
+
+```bash
+docker-compose up --build
+```
+
+**自定义配置 (通过环境变量)**
+
+你可以在 `.env` 文件或命令行中设置以下环境变量来调整部署：
+
+- `FRONTEND_DOMAIN`: 前端访问域名 (默认 `localhost`)
+- `BACKEND_PORT`: 后端服务端口 (默认 `3001`)
+
+示例：
+```bash
+FRONTEND_DOMAIN=my-site.com BACKEND_PORT=4000 docker-compose up --build
+```
+
+启动后：
+- **Web 端**: `http://localhost` (或你配置的域名)
+- **服务端**: `http://localhost:3001` (或你配置的端口)
+- **数据存储**: 所有上传的文件和元数据会保存在项目根目录的 `data/` 目录下。
+
+### 6. 配置 HTTPS
+
+要启用 HTTPS，请按照以下步骤操作：
+
+1.  **准备证书**：
+    将你的 SSL 证书文件（`server.crt` 和 `server.key`）放入项目根目录下的 `secrets/` 目录中。
+    > 注意：`secrets/` 目录下的文件会被 Git 忽略，但 `secrets/example/` 目录下的示例文件除外。
+
+    ```bash
+    cp secrets/example/server.crt secrets/server.crt
+    cp secrets/example/server.key secrets/server.key
+    # 然后用真实内容覆盖这两个文件
+    ```
+
+2.  **配置环境变量**：
+    在 `.env` 文件或 `docker-compose.yml` 中设置 `ENABLE_HTTPS=true`。
+
+    ```bash
+    ENABLE_HTTPS=true FRONTEND_DOMAIN=my-site.com docker-compose up --build
+    ```
+
+    **注意**：启用 HTTPS 后，HTTP (80端口) 的请求会自动重定向到 HTTPS (443端口)。
+
 ## 默认账号
 
 - **用户名**: `admin`

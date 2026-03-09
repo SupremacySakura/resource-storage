@@ -17,8 +17,7 @@ interface LoginRequest {
 router.post('/login', async (ctx) => {
     // 从请求体中获取用户名和密码
     const { username, password } = ctx.request.body as LoginRequest
-    // 读取配置文件
-    const configPath = path.resolve(__dirname, '../config/user.json')
+    const configPath = process.env.USER_CONFIG_PATH || path.resolve(__dirname, '../config/user.json')
     const config = fs.readJsonSync(configPath) as LoginRequest
     // 判断用户名
     if (config.username !== username) {

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  resource-server:
+    container_name: resource-server
+    build:
+      context: .
+      dockerfile: apps/resource-server/Dockerfile
+    ports:
+      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+    environment:
+      - PORT=${BACKEND_PORT:-3001}
+      - RESOURCE_META_DIR=/data/meta
+      - RESOURCE_CHUNK_DIR=/data/chunks
+      - RESOURCE_FILE_DIR=/data/files
+      - SECRET=resource-storage-secret
+      # Optional: Mount user config if you want to persist/change it outside
+      # - USER_CONFIG_PATH=/data/config/user.json
+    volumes:
+      - ./data/meta:/data/meta
+      - ./data/chunks:/data/chunks
+      - ./data/files:/data/files
+      # - ./data/config:/data/config
+    restart: always
+
+  resource-website:
+    container_name: resource-website
+    build:
+      context: .
+      dockerfile: apps/resource-website/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-localhost}
+      - BACKEND_PORT=${BACKEND_PORT:-3001}
+      - ENABLE_HTTPS=${ENABLE_HTTPS:-false}
+    volumes:
+      - ./secrets:/etc/nginx/certs
+    depends_on:
+      - resource-server
+    restart: always
