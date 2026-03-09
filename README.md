@@ -88,15 +88,17 @@ docker-compose up --build
 
 - `FRONTEND_DOMAIN`: 前端访问域名 (默认 `localhost`)
 - `BACKEND_PORT`: 后端服务端口 (默认 `3001`)
+- `FRONTEND_PORT`: 前端服务对外暴露端口 (默认 `80`)
+- `FRONTEND_SSL_PORT`: 前端 HTTPS 对外暴露端口 (默认 `443`)
 
 示例：
 ```bash
-FRONTEND_DOMAIN=my-site.com BACKEND_PORT=4000 docker-compose up --build
+FRONTEND_DOMAIN=my-site.com FRONTEND_PORT=8080 BACKEND_PORT=4000 docker-compose up --build
 ```
 
 启动后：
-- **Web 端**: `http://localhost` (或你配置的域名)
-- **服务端**: `http://localhost:3001` (或你配置的端口)
+- **Web 端**: `http://localhost:8080` (或你配置的域名和端口)
+- **服务端**: `http://localhost:4000` (或你配置的端口)
 - **数据存储**: 所有上传的文件和元数据会保存在项目根目录的 `data/` 目录下。
 
 ### 6. 配置 HTTPS
