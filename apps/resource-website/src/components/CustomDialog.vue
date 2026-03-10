@@ -170,7 +170,7 @@ const close = () => {
     }
 
     .dialog-body {
-        padding: 8px 4px;
+        padding: 24px 8px 0px 8px;
         flex: 1;
         /* Take up remaining space */
         overflow-y: auto;
@@ -178,7 +178,7 @@ const close = () => {
         height: auto;
         display: flex;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         justify-content: flex-start;
         min-height: 0;
     }
