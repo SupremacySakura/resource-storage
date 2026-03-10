@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Close, Lock, Key, Delete, View, Warning, CopyDocument } from '@element-plus/icons-vue'
+import { Lock, Key, Delete, View, Warning, CopyDocument } from '@element-plus/icons-vue'
 import type { FileItem } from '../types/file'
+import CustomDialog from './CustomDialog.vue'
 
 const props = defineProps<{
     modelValue: boolean
@@ -32,15 +33,9 @@ watch(() => props.file, (newFile) => {
 watch(() => props.modelValue, (val) => {
     if (val && props.file) {
         selectedRole.value = props.file.role
-        // Reset tab to permission on open? Or keep last? 
-        // Original code reset it in openOperation: operationTab.value = 'permission'
         operationTab.value = 'permission'
     }
 })
-
-const handleClose = () => {
-    emit('update:modelValue', false)
-}
 
 const handleUpdatePermission = () => {
     emit('update-permission', selectedRole.value)
@@ -66,42 +61,32 @@ const copyKey = async () => {
 </script>
 
 <template>
-    <el-dialog :model-value="modelValue" width="700px" class="operation-dialog" align-center :show-close="false"
+    <CustomDialog :model-value="modelValue" title="操作控制台" width="700px"
         @update:model-value="(val: boolean) => emit('update:modelValue', val)">
-        <template #header>
-            <div class="dialog-header">
-                <span>操作控制台</span>
-                <el-button link class="close-btn" @click="handleClose">
-                    <el-icon>
-                        <Close />
-                    </el-icon>
-                </el-button>
-            </div>
-        </template>
+
         <div class="op-container">
             <div class="op-left">
-                <el-menu :default-active="operationTab" class="op-menu"
-                    @select="(key: string) => operationTab = key as any">
-                    <el-menu-item index="permission">
-                        <el-icon>
-                            <Lock />
-                        </el-icon>
-                        <span>权限设置</span>
-                    </el-menu-item>
-                    <el-menu-item index="key">
-                        <el-icon>
-                            <Key />
-                        </el-icon>
-                        <span>生成 Key</span>
-                    </el-menu-item>
-                    <el-menu-item index="delete">
-                        <el-icon>
-                            <Delete />
-                        </el-icon>
-                        <span>删除文件</span>
-                    </el-menu-item>
-                </el-menu>
+                <div class="nav-item" :class="{ active: operationTab === 'permission' }"
+                    @click="operationTab = 'permission'">
+                    <el-icon>
+                        <Lock />
+                    </el-icon>
+                    <span>权限设置</span>
+                </div>
+                <div class="nav-item" :class="{ active: operationTab === 'key' }" @click="operationTab = 'key'">
+                    <el-icon>
+                        <Key />
+                    </el-icon>
+                    <span>生成 Key</span>
+                </div>
+                <div class="nav-item" :class="{ active: operationTab === 'delete' }" @click="operationTab = 'delete'">
+                    <el-icon>
+                        <Delete />
+                    </el-icon>
+                    <span>删除文件</span>
+                </div>
             </div>
+
             <div class="op-right">
                 <div v-if="operationTab === 'permission'" class="op-section">
                     <div class="op-header">
@@ -110,7 +95,7 @@ const copyKey = async () => {
                     </div>
 
                     <div class="permission-card">
-                        <el-radio-group v-model="selectedRole" class="role-group">
+                        <div class="role-group">
                             <div class="role-option" :class="{ active: selectedRole === 'public' }"
                                 @click="selectedRole = 'public'">
                                 <div class="role-icon"><el-icon>
@@ -120,7 +105,7 @@ const copyKey = async () => {
                                     <div class="role-name">公开访问</div>
                                     <div class="role-desc">任何人都可以访问此文件</div>
                                 </div>
-                                <el-radio label="public" class="role-radio"><span /></el-radio>
+                                <div class="radio-indicator"></div>
                             </div>
                             <div class="role-option" :class="{ active: selectedRole === 'key' }"
                                 @click="selectedRole = 'key'">
@@ -131,9 +116,9 @@ const copyKey = async () => {
                                     <div class="role-name">密钥访问</div>
                                     <div class="role-desc">需要有效的 Key 才能访问</div>
                                 </div>
-                                <el-radio label="key" class="role-radio"><span /></el-radio>
+                                <div class="radio-indicator"></div>
                             </div>
-                        </el-radio-group>
+                        </div>
                     </div>
 
                     <div class="op-actions">
@@ -166,15 +151,12 @@ const copyKey = async () => {
                             <div v-if="file?.key" class="key-result-box">
                                 <div class="key-label">生成的 Key</div>
                                 <div class="key-content">
-                                    <el-input :model-value="file.key" readonly>
-                                        <template #append>
-                                            <el-button @click="copyKey">
-                                                <el-icon>
-                                                    <CopyDocument />
-                                                </el-icon>
-                                            </el-button>
-                                        </template>
-                                    </el-input>
+                                    <div class="key-text">{{ file.key }}</div>
+                                    <el-button @click="copyKey" size="small" circle>
+                                        <el-icon>
+                                            <CopyDocument />
+                                        </el-icon>
+                                    </el-button>
                                 </div>
                                 <div class="key-tip">请妥善保管此 Key，用于文件访问验证。</div>
                             </div>
@@ -207,59 +189,60 @@ const copyKey = async () => {
                 </div>
             </div>
         </div>
-    </el-dialog>
+    </CustomDialog>
 </template>
 
 <style scoped>
-/* Operation Dialog Styles */
-.dialog-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: #303133;
-}
-
 .op-container {
     display: flex;
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 420px;
-    background-color: #fff;
+    height: 400px;
+    margin: -24px;
+    /* Counteract dialog padding */
 }
 
 .op-left {
     width: 200px;
-    background-color: #f5f7fa;
-    border-right: 1px solid #ebeef5;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid var(--border-color);
     flex-shrink: 0;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.op-menu {
-    border-right: none;
-    background-color: transparent;
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+    font-size: 14px;
 }
 
-.op-menu :deep(.el-menu-item) {
-    height: 50px;
-    line-height: 50px;
-    margin: 4px 8px;
-    border-radius: 6px;
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
 }
 
-.op-menu :deep(.el-menu-item.is-active) {
-    background-color: #fff;
-    color: #409EFF;
+.nav-item.active {
+    background-color: rgba(6, 182, 212, 0.1);
+    color: var(--color-primary);
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item .el-icon {
+    margin-right: 10px;
+    font-size: 18px;
 }
 
 .op-right {
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    color: var(--color-text-primary);
 }
 
 .op-header {
@@ -269,20 +252,20 @@ const copyKey = async () => {
 .op-title {
     font-size: 18px;
     font-weight: 600;
-    color: #303133;
+    color: var(--color-text-primary);
     margin-bottom: 8px;
+}
+
+.op-actions {
+    margin-top: 24px;
 }
 
 .op-subtitle {
     font-size: 14px;
-    color: #909399;
+    color: var(--color-text-secondary);
 }
 
 /* Permission Card Styles */
-.permission-card {
-    margin-bottom: 30px;
-}
-
 .role-group {
     display: flex;
     flex-direction: column;
@@ -294,32 +277,32 @@ const copyKey = async () => {
     display: flex;
     align-items: center;
     padding: 16px;
-    border: 1px solid #dcdfe6;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    position: relative;
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
 .role-option:hover {
-    border-color: #c0c4cc;
-    background-color: #fafafa;
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .role-option.active {
-    border-color: #409EFF;
-    background-color: #ecf5ff;
+    border-color: var(--color-primary);
+    background-color: rgba(6, 182, 212, 0.1);
 }
 
 .role-icon {
     font-size: 24px;
     margin-right: 16px;
-    color: #909399;
+    color: var(--color-text-secondary);
     display: flex;
 }
 
 .role-option.active .role-icon {
-    color: #409EFF;
+    color: var(--color-primary);
 }
 
 .role-info {
@@ -328,18 +311,38 @@ const copyKey = async () => {
 
 .role-name {
     font-weight: 600;
-    color: #303133;
+    color: var(--color-text-primary);
     margin-bottom: 4px;
 }
 
 .role-desc {
     font-size: 12px;
-    color: #909399;
+    color: var(--color-text-secondary);
 }
 
-.role-radio {
-    margin-left: 10px;
-    pointer-events: none;
+.radio-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--color-text-secondary);
+    position: relative;
+    margin-left: 12px;
+}
+
+.role-option.active .radio-indicator {
+    border-color: var(--color-primary);
+}
+
+.role-option.active .radio-indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-primary);
+    border-radius: 50%;
 }
 
 /* Key Gen Styles */
@@ -349,10 +352,12 @@ const copyKey = async () => {
     align-items: center;
     justify-content: center;
     padding: 40px;
-    background-color: #fdf6ec;
+    background-color: rgba(245, 158, 11, 0.1);
     border-radius: 8px;
-    color: #e6a23c;
+    color: var(--color-warning);
     gap: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    text-align: center;
 }
 
 .warning-box .el-icon {
@@ -366,22 +371,40 @@ const copyKey = async () => {
 }
 
 .key-result-box {
-    background-color: #f5f7fa;
+    background-color: rgba(0, 0, 0, 0.2);
     padding: 20px;
     border-radius: 8px;
-    border: 1px dashed #dcdfe6;
+    border: 1px dashed var(--border-color);
 }
 
 .key-label {
     font-size: 14px;
     font-weight: 600;
-    color: #606266;
+    color: var(--color-text-secondary);
     margin-bottom: 8px;
+}
+
+.key-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.key-text {
+    flex: 1;
+    font-family: var(--font-family-mono);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    word-break: break-all;
 }
 
 .key-tip {
     font-size: 12px;
-    color: #909399;
+    color: var(--color-text-tertiary);
     margin-top: 8px;
 }
 
@@ -393,9 +416,9 @@ const copyKey = async () => {
 }
 
 .warning-box.danger {
-    background-color: #fef0f0;
-    color: #f56c6c;
-    border: 1px solid #fde2e2;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
     flex-direction: row;
     align-items: flex-start;
     text-align: left;
@@ -406,6 +429,7 @@ const copyKey = async () => {
     font-size: 24px;
     margin-top: 2px;
     margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .warning-content {
@@ -418,12 +442,182 @@ const copyKey = async () => {
 .warning-title {
     font-weight: 600;
     font-size: 16px;
-    color: #f56c6c;
+    color: var(--color-danger);
 }
 
 .warning-text {
     font-size: 14px;
-    color: #f56c6c;
+    color: var(--color-danger);
     opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+    .op-container {
+        flex-direction: column;
+        height: 100%;
+        /* Fill dialog height */
+        min-height: auto;
+        /* margin: -20px; */
+        width: 100%;
+        /* Adjust margin to match padding */
+        overflow: hidden;
+        /* Prevent container scrolling */
+    }
+
+    .op-left {
+        width: 100%;
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 8px 4px;
+        overflow-x: auto;
+        /* Only allow horizontal scroll here */
+        overflow-y: hidden;
+        flex-shrink: 0;
+        /* Prevent shrinking */
+        gap: 8px;
+        /* Add gap between items */
+        /* Hide scrollbar for cleaner look but keep functionality */
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE/Edge */
+    }
+
+    .op-left::-webkit-scrollbar {
+        display: none;
+        /* Chrome/Safari/Opera */
+    }
+
+    .nav-item {
+        flex: 0 0 auto;
+        /* Allow items to keep their size */
+        width: 80px;
+        /* Fixed width for better touch target */
+        justify-content: center;
+        padding: 8px 4px;
+        white-space: nowrap;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11px;
+    }
+
+    .nav-item .el-icon {
+        margin-right: 0;
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .op-right {
+        padding: 6px;
+        flex: 1;
+        overflow-y: auto;
+        /* Allow vertical scroll */
+        overflow-x: hidden;
+        /* Prevent horizontal scroll */
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .op-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .op-header {
+        margin-bottom: 12px;
+    }
+
+    .op-title {
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+
+    .op-subtitle {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .role-group {
+        gap: 8px;
+    }
+
+    .role-option {
+        padding: 8px;
+    }
+
+    .role-icon {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    .role-name {
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .role-desc {
+        font-size: 10px;
+    }
+
+    .radio-indicator {
+        width: 14px;
+        height: 14px;
+        margin-left: 8px;
+    }
+
+    .radio-indicator::after {
+        width: 6px;
+        height: 6px;
+    }
+
+    .warning-box {
+        padding: 16px 12px;
+        gap: 8px;
+    }
+
+    .warning-box .el-icon {
+        font-size: 20px;
+    }
+
+    .warning-content {
+        gap: 2px;
+    }
+
+    .warning-title {
+        font-size: 14px;
+    }
+
+    .warning-text {
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .key-result-box {
+        padding: 12px;
+    }
+
+    .key-content {
+        padding: 6px 8px;
+    }
+
+    .key-text {
+        font-size: 12px;
+    }
+
+    .op-actions {
+        padding-top: 12px;
+    }
+
+    /* Force button size smaller on mobile */
+    .op-actions :deep(.el-button) {
+        height: 32px;
+        font-size: 13px;
+        padding: 8px 16px;
+    }
 }
 </style>

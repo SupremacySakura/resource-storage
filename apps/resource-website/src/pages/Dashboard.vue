@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-import { Document, Picture, VideoCamera, Service, View, Lock } from '@element-plus/icons-vue'
+import { Document, Picture, VideoCamera, Service, View, Lock, Refresh } from '@element-plus/icons-vue'
 import { getFileList } from '../services/apis/files'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 import type { FileItem } from '../types/file'
-import { formatSize,getExt,getFileIcon, isAudioExt, isImageExt, isVideoExt } from '../utils/file'
+import { formatSize, getExt, getFileIcon, isAudioExt, isImageExt, isVideoExt } from '../utils/file'
 import { formatDate } from '../utils/common'
 
 const userStore = useUserStore()
@@ -70,312 +70,527 @@ onMounted(() => {
         <!-- Top: Metrics -->
         <div class="section-block">
             <div class="metric-grid">
-                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                    <div class="metric-header">
-                        <el-icon class="metric-icon">
+                <div class="metric-card glass-card">
+                    <div class="metric-icon-wrapper primary">
+                        <el-icon>
                             <Document />
                         </el-icon>
-                        <span>文件总数</span>
                     </div>
-                    <div class="metric-value">{{ totalFiles }}</div>
-                    <div class="metric-sub">已完成上传：{{ completedCount }} / {{ totalFiles }}</div>
-                </el-card>
-                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                    <div class="metric-header">
-                        <el-icon class="metric-icon">
+                    <div class="metric-content">
+                        <span class="label">Total Files</span>
+                        <div class="value">{{ totalFiles }}</div>
+                        <div class="sub">Completed: {{ completedCount }}</div>
+                    </div>
+                </div>
+
+                <div class="metric-card glass-card">
+                    <div class="metric-icon-wrapper secondary">
+                        <el-icon>
                             <Service />
                         </el-icon>
-                        <span>存储占用</span>
                     </div>
-                    <div class="metric-value">{{ formatSize(totalSize) }}</div>
-                    <div class="metric-sub">平均大小：{{ formatSize(avgSize) }}</div>
-                </el-card>
-                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                    <div class="metric-header">
-                        <el-icon class="metric-icon">
+                    <div class="metric-content">
+                        <span class="label">Storage Used</span>
+                        <div class="value">{{ formatSize(totalSize) }}</div>
+                        <div class="sub">Avg: {{ formatSize(avgSize) }}</div>
+                    </div>
+                </div>
+
+                <div class="metric-card glass-card">
+                    <div class="metric-icon-wrapper success">
+                        <el-icon>
                             <View />
                         </el-icon>
-                        <span>公开文件</span>
                     </div>
-                    <div class="metric-value">{{ publicCount }}</div>
-                    <el-progress :percentage="privacyPublicPercent" :stroke-width="8" status="success" />
-                </el-card>
-                <el-card class="box-card metric-card" :body-style="{ padding: '16px' }">
-                    <div class="metric-header">
-                        <el-icon class="metric-icon">
+                    <div class="metric-content">
+                        <span class="label">Public Files</span>
+                        <div class="value">{{ publicCount }}</div>
+                        <div class="progress-mini">
+                            <div class="bar"
+                                :style="{ width: privacyPublicPercent + '%', background: 'var(--color-success)' }">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card glass-card">
+                    <div class="metric-icon-wrapper warning">
+                        <el-icon>
                             <Lock />
                         </el-icon>
-                        <span>密钥文件</span>
                     </div>
-                    <div class="metric-value">{{ keyCount }}</div>
-                    <el-progress :percentage="privacyKeyPercent" :stroke-width="8" status="warning" />
-                </el-card>
+                    <div class="metric-content">
+                        <span class="label">Private Files</span>
+                        <div class="value">{{ keyCount }}</div>
+                        <div class="progress-mini">
+                            <div class="bar"
+                                :style="{ width: privacyKeyPercent + '%', background: 'var(--color-warning)' }"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Middle: Overview -->
         <div class="section-block two-columns">
             <div class="column-item">
-                <el-card class="box-card" :body-style="{ padding: '20px' }">
-                    <template #header>
-                        <div class="card-header">
-                            <span>存储概览</span>
-                            <el-button link type="primary" @click="fetchFiles">刷新</el-button>
-                        </div>
-                    </template>
+                <div class="panel-card glass-card">
+                    <div class="panel-header">
+                        <h3>Storage Overview</h3>
+                        <el-button link type="primary" @click="fetchFiles">
+                            <el-icon>
+                                <Refresh />
+                            </el-icon>
+                        </el-button>
+                    </div>
                     <div class="overview-grid">
                         <div class="overview-item">
                             <div class="overview-title">
-                                <el-icon>
+                                <el-icon class="icon-img">
                                     <Picture />
                                 </el-icon>
-                                <span>图片</span>
+                                <span>Images</span>
                             </div>
-                            <el-progress :percentage="typePercent.images" :stroke-width="10" />
-                            <div class="overview-sub">{{ imagesCount }} 个</div>
+                            <el-progress :percentage="typePercent.images" :stroke-width="6"
+                                :color="'var(--color-primary)'" />
+                            <div class="overview-sub">{{ imagesCount }} files</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
-                                <el-icon>
+                                <el-icon class="icon-vid">
                                     <VideoCamera />
                                 </el-icon>
-                                <span>视频</span>
+                                <span>Videos</span>
                             </div>
-                            <el-progress :percentage="typePercent.videos" :stroke-width="10" />
-                            <div class="overview-sub">{{ videosCount }} 个</div>
+                            <el-progress :percentage="typePercent.videos" :stroke-width="6"
+                                :color="'var(--color-secondary)'" />
+                            <div class="overview-sub">{{ videosCount }} files</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
-                                <el-icon>
+                                <el-icon class="icon-aud">
                                     <Service />
                                 </el-icon>
-                                <span>音频</span>
+                                <span>Audios</span>
                             </div>
-                            <el-progress :percentage="typePercent.audios" :stroke-width="10" />
-                            <div class="overview-sub">{{ audiosCount }} 个</div>
+                            <el-progress :percentage="typePercent.audios" :stroke-width="6"
+                                :color="'var(--color-success)'" />
+                            <div class="overview-sub">{{ audiosCount }} files</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
-                                <el-icon>
+                                <el-icon class="icon-oth">
                                     <Document />
                                 </el-icon>
-                                <span>其他</span>
+                                <span>Others</span>
                             </div>
-                            <el-progress :percentage="typePercent.others" :stroke-width="10" />
-                            <div class="overview-sub">{{ othersCount }} 个</div>
+                            <el-progress :percentage="typePercent.others" :stroke-width="6"
+                                :color="'var(--color-info)'" />
+                            <div class="overview-sub">{{ othersCount }} files</div>
                         </div>
                     </div>
-                </el-card>
+                </div>
             </div>
+
             <div class="column-item">
-                <el-card class="box-card" :body-style="{ padding: '20px' }">
-                    <template #header>
-                        <div class="card-header">
-                            <span>隐私概览</span>
-                            <el-button link type="primary" @click="fetchFiles">刷新</el-button>
-                        </div>
-                    </template>
+                <div class="panel-card glass-card">
+                    <div class="panel-header">
+                        <h3>Privacy Distribution</h3>
+                        <el-button link type="primary" @click="fetchFiles">
+                            <el-icon>
+                                <Refresh />
+                            </el-icon>
+                        </el-button>
+                    </div>
                     <div class="privacy-grid">
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <el-tag type="success" effect="dark" size="small">公开</el-tag>
+                                <span class="badge success">Public</span>
                             </div>
                             <div class="privacy-value">{{ publicCount }}</div>
-                            <el-progress :percentage="privacyPublicPercent" :stroke-width="10" status="success" />
+                            <el-progress :percentage="privacyPublicPercent" :stroke-width="6" status="success" />
                         </div>
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <el-tag type="warning" effect="dark" size="small">密钥</el-tag>
+                                <span class="badge warning">Key Protected</span>
                             </div>
                             <div class="privacy-value">{{ keyCount }}</div>
-                            <el-progress :percentage="privacyKeyPercent" :stroke-width="10" status="warning" />
+                            <el-progress :percentage="privacyKeyPercent" :stroke-width="6" status="warning" />
                         </div>
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <el-tag type="info" effect="dark" size="small">上传完成</el-tag>
+                                <span class="badge info">Uploaded</span>
                             </div>
                             <div class="privacy-value">{{ completedPercent }}%</div>
-                            <el-progress :percentage="completedPercent" :stroke-width="10" />
+                            <el-progress :percentage="completedPercent" :stroke-width="6" />
                         </div>
                     </div>
-                </el-card>
+                </div>
             </div>
         </div>
 
         <!-- Bottom: Recent Files -->
         <div class="section-block">
-            <el-card class="box-card" :body-style="{ padding: '0px' }">
-                <template #header>
-                    <div class="card-header">
-                        <span>最近文件</span>
-                        <el-button link type="primary" @click="fetchFiles">刷新</el-button>
-                    </div>
-                </template>
-                <div v-if="recentFiles.length === 0" class="empty-list">暂无数据</div>
-                <el-table v-else :data="recentFiles" border style="width: 100%">
-                    <el-table-column prop="name" label="文件名" min-width="220" />
-                    <el-table-column prop="size" label="大小" width="120">
-                        <template #default="{ row }">{{ formatSize(row.size) }}</template>
-                    </el-table-column>
-                    <el-table-column prop="role" label="权限" width="120">
-                        <template #default="{ row }">
-                            <el-tag :type="row.role === 'public' ? 'success' : 'warning'" size="small" effect="dark">
-                                {{ row.role === 'public' ? '公开' : '密钥' }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="modifiedTime" label="修改时间" width="180">
-                        <template #default="{ row }">{{ formatDate(row.modifiedTime) }}</template>
-                    </el-table-column>
-                    <el-table-column label="类型" width="120" fixed="right">
-                        <template #default="{ row }">
-                            <el-icon>
-                                <component :is="getFileIcon(row.name)" />
-                            </el-icon>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </el-card>
+            <div class="panel-card glass-card no-padding">
+                <div class="panel-header padding">
+                    <h3>Recent Files</h3>
+                    <el-button link type="primary" @click="fetchFiles">
+                        <el-icon>
+                            <Refresh />
+                        </el-icon>
+                    </el-button>
+                </div>
+
+                <div v-if="recentFiles.length === 0" class="empty-list">No data available</div>
+
+                <div v-else class="responsive-table-wrapper">
+                    <el-table :data="recentFiles" style="width: 100%" class="transparent-table">
+                        <el-table-column prop="name" label="Filename" min-width="200">
+                            <template #default="{ row }">
+                                <div class="file-name-cell">
+                                    <el-icon class="file-icon">
+                                        <component :is="getFileIcon(row.name)" />
+                                    </el-icon>
+                                    <span class="text">{{ row.name }}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="size" label="Size" width="120">
+                            <template #default="{ row }">
+                                <span class="mono-text">{{ formatSize(row.size) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="role" label="Permission" width="120">
+                            <template #default="{ row }">
+                                <span class="badge" :class="row.role === 'public' ? 'success' : 'warning'">
+                                    {{ row.role === 'public' ? 'Public' : 'Key' }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="modifiedTime" label="Modified" width="180">
+                            <template #default="{ row }">
+                                <span class="mono-text">{{ formatDate(row.modifiedTime) }}</span>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
         </div>
     </div>
 </template>
-
 
 <style lang="scss" scoped>
 .dashboard-container {
     height: 100%;
     padding: 20px;
     padding-bottom: 60px;
-    /* Ensure space at bottom for scrolling */
-    background-color: transparent;
     overflow-y: auto;
 }
 
-.box-card {
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
-    box-shadow: none;
-    transition: all 0.2s;
-
-    &:hover {
-        border-color: #dcdfe6;
-    }
+.section-block {
+    margin-bottom: 24px;
 }
 
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    color: #303133;
-}
-
+/* Metric Cards */
 .metric-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
-.metric-card .metric-header {
+.metric-card {
+    padding: 20px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #606266;
-    font-size: 14px;
+    align-items: flex-start;
+    gap: 16px;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    .metric-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+
+        &.primary {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--color-primary);
+        }
+
+        &.secondary {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--color-secondary);
+        }
+
+        &.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--color-success);
+        }
+
+        &.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--color-warning);
+        }
+    }
+
+    .metric-content {
+        flex: 1;
+
+        .label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            font-family: var(--font-family-mono);
+            margin-bottom: 4px;
+        }
+
+        .sub {
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+        }
+
+        .progress-mini {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+
+            .bar {
+                height: 100%;
+                border-radius: 2px;
+            }
+        }
+    }
 }
 
-.metric-card .metric-icon {
-    font-size: 18px;
-    color: #909399;
-}
-
-.metric-card .metric-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #303133;
-    margin: 6px 0 8px;
-}
-
-.metric-card .metric-sub {
-    font-size: 12px;
-    color: #909399;
-}
-
-.section-block {
-    margin-bottom: 20px;
-}
-
+/* Overview Panels */
 .two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.column-item {
+    height: 100%;
+}
+
+.panel-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+
+    &.no-padding {
+        padding: 0;
+    }
+
+    /* Only fill height when inside a grid column to ensure alignment */
+    .column-item & {
+        height: 100%;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+
+        &.padding {
+            padding: 20px 24px;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 0;
+        }
+    }
+}
+
+.responsive-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.overview-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-.column-item {
-    min-width: 0;
-    /* Prevent grid blowout */
-}
-
-.overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-}
-
 .overview-item {
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
     padding: 16px;
-    background-color: #fff;
-}
+    border: 1px solid var(--border-color);
 
-.overview-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 8px;
-}
+    .overview-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 12px;
+        font-size: 14px;
 
-.overview-sub {
-    font-size: 12px;
-    color: #909399;
-    margin-top: 8px;
+        .icon-img {
+            color: var(--color-primary);
+        }
+
+        .icon-vid {
+            color: var(--color-secondary);
+        }
+
+        .icon-aud {
+            color: var(--color-success);
+        }
+
+        .icon-oth {
+            color: var(--color-info);
+        }
+    }
+
+    .overview-sub {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        margin-top: 8px;
+        text-align: right;
+        font-family: var(--font-family-mono);
+    }
 }
 
 .privacy-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
 }
 
 .privacy-item {
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
-    padding: 16px;
-    background-color: #fff;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+
+    .privacy-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-family: var(--font-family-mono);
+    }
 }
 
-.privacy-title {
+/* Badges */
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+
+    &.success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--color-success);
+    }
+
+    &.warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--color-warning);
+    }
+
+    &.info {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--color-info);
+    }
+}
+
+/* Table Styles */
+.transparent-table {
+    --el-table-bg-color: transparent;
+    --el-table-tr-bg-color: transparent;
+    --el-table-header-bg-color: rgba(255, 255, 255, 0.02);
+    --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.05);
+    --el-table-border-color: var(--border-color);
+    background-color: transparent !important;
+}
+
+.file-name-cell {
     display: flex;
     align-items: center;
     gap: 8px;
+
+    .file-icon {
+        font-size: 18px;
+        color: var(--color-text-secondary);
+    }
+
+    .text {
+        color: var(--color-text-primary);
+        font-weight: 500;
+    }
 }
 
-.privacy-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: #303133;
+.mono-text {
+    font-family: var(--font-family-mono);
+    color: var(--color-text-secondary);
+    font-size: 13px;
 }
 
 .empty-list {
-    color: #909399;
+    color: var(--color-text-secondary);
     text-align: center;
-    padding: 20px;
+    padding: 40px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .metric-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .privacy-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-container {
+        padding: 16px;
+    }
+
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

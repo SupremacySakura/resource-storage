@@ -2,6 +2,7 @@
 import { formatSize } from '../utils/file'
 import { formatDate } from '../utils/common'
 import type { FileItem } from '../types/file'
+import CustomDialog from './CustomDialog.vue'
 
 defineProps<{
     modelValue: boolean
@@ -19,65 +20,177 @@ const handleClose = () => {
 </script>
 
 <template>
-    <el-dialog :model-value="modelValue" width="600px" class="info-dialog" align-center title="文件详细信息"
+    <CustomDialog :model-value="modelValue" title="文件详细信息" width="600px"
         @update:model-value="(val: boolean) => emit('update:modelValue', val)">
         <div v-if="file" class="info-content">
-            <el-descriptions :column="1" border class="info-desc">
-                <el-descriptions-item label="文件名">
-                    <span class="text-strong">{{ file.name }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="文件大小">{{ formatSize(file.size) }}</el-descriptions-item>
-                <el-descriptions-item label="文件地址">{{ file.path }}</el-descriptions-item>
-                <el-descriptions-item label="权限">
-                    <el-tag :type="file.role === 'public' ? 'success' : 'warning'" size="small" effect="dark">
-                        {{ file.role === 'public' ? '公开' : '密钥' }}
-                    </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="修改时间">{{ formatDate(file.modifiedTime) }}</el-descriptions-item>
-                <el-descriptions-item label="分片进度">
-                    <el-progress :percentage="Math.round((file.chunks.length / file.chunkCount) * 100)"
-                        :status="file.chunks.length === file.chunkCount ? 'success' : ''" />
-                </el-descriptions-item>
-                <el-descriptions-item label="文件哈希">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">文件名</span>
+                    <span class="value text-strong">{{ file.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">文件大小</span>
+                    <span class="value">{{ formatSize(file.size) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">文件地址</span>
+                    <span class="value">{{ file.path }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">权限</span>
+                    <span class="value">
+                        <span class="badge" :class="file.role === 'public' ? 'success' : 'warning'">
+                            {{ file.role === 'public' ? '公开' : '密钥' }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="label">修改时间</span>
+                    <span class="value">{{ formatDate(file.modifiedTime) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">分片进度</span>
+                    <div class="value progress-wrapper">
+                        <div class="progress-bar">
+                            <div class="fill"
+                                :style="{ width: Math.round((file.chunks.length / file.chunkCount) * 100) + '%' }">
+                            </div>
+                        </div>
+                        <span class="progress-text">{{ Math.round((file.chunks.length / file.chunkCount) * 100)
+                        }}%</span>
+                    </div>
+                </div>
+                <div class="info-item vertical">
+                    <span class="label">文件哈希</span>
                     <div class="code-block">{{ file.hash }}</div>
-                </el-descriptions-item>
-                <el-descriptions-item label="预览链接">
+                </div>
+                <div class="info-item vertical">
+                    <span class="label">预览链接</span>
                     <div class="code-block link-block">{{ previewUrl }}</div>
-                </el-descriptions-item>
-            </el-descriptions>
+                </div>
+            </div>
         </div>
         <template #footer>
             <el-button @click="handleClose">关闭</el-button>
         </template>
-    </el-dialog>
+    </CustomDialog>
 </template>
 
 <style scoped>
-/* Info Dialog Styles */
-.info-desc :deep(.el-descriptions__label) {
-    width: 100px;
-    color: #606266;
+.info-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.info-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+.info-item.vertical {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: start;
+}
+
+.label {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.value {
+    color: var(--color-text-primary);
+    font-size: 14px;
+    word-break: break-all;
 }
 
 .text-strong {
     font-weight: 600;
-    color: #303133;
+}
+
+/* Badge */
+.badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge.success {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--color-success);
+}
+
+.badge.warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: var(--color-warning);
+}
+
+/* Progress */
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    background-color: var(--color-success);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    min-width: 32px;
+    text-align: right;
 }
 
 .code-block {
-    font-family: monospace;
-    background-color: #f5f7fa;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #606266;
+    font-family: var(--font-family-mono);
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--color-text-primary);
     word-break: break-all;
     white-space: pre-wrap;
     max-height: 100px;
     overflow-y: auto;
+    border: 1px solid var(--border-color);
 }
 
 .link-block {
-    color: #409EFF;
+    color: var(--color-primary);
+}
+
+@media (max-width: 600px) {
+    .info-item {
+        grid-template-columns: 1fr;
+        /* Stack vertically on mobile */
+        gap: 4px;
+        align-items: start;
+    }
+
+    .label {
+        font-size: 12px;
+    }
+
+    .value {
+        font-size: 15px;
+    }
 }
 </style>

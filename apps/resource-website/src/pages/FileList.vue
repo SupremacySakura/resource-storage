@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Document, Folder, CaretRight } from '@element-plus/icons-vue'
+import { Document, Folder, CaretRight, Back, Refresh, MoreFilled } from '@element-plus/icons-vue'
 import { getFileList, updateFilePermission, generateKey, deleteFile } from '../services/apis/files'
 import { useUserStore } from '../stores/user'
 import { getFileIcon, isImageExt, isVideoExt, isTextExt, getIconColor } from '../utils/file'
@@ -21,6 +21,24 @@ const deleting = ref(false)
 const infoVisible = ref(false)
 
 const expandedDirs = ref<Set<string>>(new Set())
+
+// Mobile logic
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+const mobilePreviewVisible = ref(false)
+
+const handleResize = () => {
+    windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+    window.addEventListener('resize', handleResize)
+    fetchFiles()
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+})
 
 const toggleDir = (dirPath: string) => {
     if (expandedDirs.value.has(dirPath)) {
@@ -96,7 +114,15 @@ const handleItemClick = (item: any) => {
         toggleDir(item.fullPath)
     } else {
         handleSelect(item.file)
+        if (isMobile.value) {
+            mobilePreviewVisible.value = true
+        }
     }
+}
+
+const closeMobilePreview = () => {
+    mobilePreviewVisible.value = false
+    selectedFile.value = null
 }
 
 const fetchFiles = async () => {
@@ -123,8 +149,22 @@ const handleSelect = (file: FileItem) => {
 const previewUrl = computed(() => {
     if (!selectedFile.value) return ''
     const { hash, key } = selectedFile.value
-    // Assuming the server address is localhost:3001, in production should be env variable
-    const API_BASE = import.meta.env.VITE_SERVER_URL + '/api'
+
+    // 优化：处理 Docker 部署时 VITE_SERVER_URL 为空的情况，补全协议和域名
+    let baseUrl = import.meta.env.VITE_SERVER_URL || ''
+
+    // 如果没有配置 VITE_SERVER_URL (Docker部署时为空)，或者是相对路径，补全 origin
+    if (!baseUrl || baseUrl.startsWith('/')) {
+        baseUrl = window.location.origin + baseUrl
+    }
+
+    // 去除末尾斜杠，避免双重斜杠
+    if (baseUrl.endsWith('/')) {
+        baseUrl = baseUrl.slice(0, -1)
+    }
+
+    const API_BASE = baseUrl + '/api'
+
     if (key) {
         return `${API_BASE}/file/read?hash=${hash}&key=${key}`
     }
@@ -249,6 +289,7 @@ const doDeleteFile = async () => {
             ElMessage.success('文件已删除')
             operationVisible.value = false
             selectedFile.value = null
+            if (isMobile.value) mobilePreviewVisible.value = false
             await fetchFiles()
         } else {
             ElMessage.error(res.message || '删除失败')
@@ -261,70 +302,69 @@ const doDeleteFile = async () => {
         deleting.value = false
     }
 }
-
-onMounted(() => {
-    fetchFiles()
-})
-
 </script>
 
 <template>
     <div class="list-container" v-loading="loading">
         <el-row :gutter="0" class="full-height">
             <!-- Left: File List -->
-            <el-col :span="6" class="col-list">
-                <el-card class="box-card full-height"
-                    :body-style="{ padding: '0px', height: '100%', overflow: 'auto' }">
-                    <template #header>
-                        <div class="card-header">
-                            <span>文件列表</span>
-                            <el-button link type="primary" @click="fetchFiles">刷新</el-button>
-                        </div>
-                    </template>
+            <el-col :span="24" :md="6" class="col-list" :class="{ 'hidden-mobile': isMobile && mobilePreviewVisible }">
+                <div class="panel-card glass-card full-height no-padding">
+                    <div class="card-header padding">
+                        <span>File Explorer</span>
+                        <el-button link type="primary" @click="fetchFiles">
+                            <el-icon>
+                                <Refresh />
+                            </el-icon>
+                        </el-button>
+                    </div>
+
                     <div v-if="fileList.length === 0" class="empty-list">
                         No files found.
                     </div>
-                    <ul v-else class="file-list-ul">
+                    <ul v-else class="file-list-ul custom-scrollbar">
                         <li v-for="item in displayItems" :key="item.key"
                             :class="{ active: !item.isDir && selectedFile?.hash === item.file.hash }"
-                            @click="handleItemClick(item)" :style="{ paddingLeft: (12 + item.level * 20) + 'px' }">
+                            @click="handleItemClick(item)" :style="{ paddingLeft: (16 + item.level * 20) + 'px' }">
                             <span class="caret-wrapper">
                                 <el-icon v-if="item.isDir" class="caret-icon"
                                     :class="{ expanded: expandedDirs.has(item.fullPath) }">
                                     <CaretRight />
                                 </el-icon>
                             </span>
-                            <el-icon class="file-icon" :style="{ color: getIconColor(item.name) || '' }">
+                            <el-icon class="file-icon"
+                                :style="{ color: getIconColor(item.name) || 'var(--color-text-secondary)' }">
                                 <component :is="item.isDir ? Folder : getFileIcon(item.name)" />
                             </el-icon>
                             <span class="file-name" :title="item.name">{{ item.name }}</span>
                         </li>
                     </ul>
-                </el-card>
+                </div>
             </el-col>
 
-            <!-- Right: Preview & Metadata -->
-            <el-col :span="18" class="col-preview">
-                <el-card class="box-card full-height"
-                    :body-style="{ height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' }">
-                    <template #header>
-                        <div class="card-header">
-                            <span>文件详情</span>
-                            <div class="header-actions">
-                                <el-button type="primary" @click="openOperation">操作</el-button>
-                                <el-button @click="openInfo">信息</el-button>
-                            </div>
+            <!-- Right: Preview & Metadata (Desktop) -->
+            <el-col :span="0" :md="18" class="col-preview hidden-mobile-block">
+                <div class="panel-card glass-card full-height">
+                    <div class="card-header">
+                        <span>File Details</span>
+                        <div class="header-actions">
+                            <el-button type="primary" size="small" @click="openOperation"
+                                :disabled="!selectedFile">Actions</el-button>
+                            <el-button size="small" @click="openInfo" :disabled="!selectedFile">Info</el-button>
                         </div>
-                    </template>
-                    <div v-if="!selectedFile" class="empty-preview">
-                        Select a file to view details and preview
                     </div>
-                    <div v-else class="file-detail-container">
 
+                    <div v-if="!selectedFile" class="empty-preview">
+                        <el-icon :size="48">
+                            <Document />
+                        </el-icon>
+                        <p>Select a file to view details</p>
+                    </div>
+
+                    <div v-else class="file-detail-container">
                         <!-- Preview Section -->
                         <div class="preview-section">
-                            <div class="preview-header">预览</div>
-                            <div class="preview-content">
+                            <div class="preview-content custom-scrollbar">
                                 <img v-if="isImage" :src="previewUrl" class="preview-media" />
                                 <video v-else-if="isVideo" :src="previewUrl" controls class="preview-media"></video>
                                 <div v-else-if="isText" class="text-preview" v-loading="loadingText">
@@ -334,17 +374,64 @@ onMounted(() => {
                                     <el-icon :size="64">
                                         <Document />
                                     </el-icon>
-                                    <p>Preview not available for this file type.</p>
+                                    <p>Preview not available</p>
                                     <a :href="previewUrl" target="_blank" class="download-link">
-                                        <el-button type="primary" link>Download / Open in new tab</el-button>
+                                        <el-button type="primary" link>Download</el-button>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </el-card>
+                </div>
             </el-col>
         </el-row>
+
+        <!-- Mobile Preview Drawer -->
+        <el-drawer v-model="mobilePreviewVisible" size="100%" :with-header="false" class="mobile-preview-drawer"
+            destroy-on-close>
+            <div class="mobile-preview-container">
+                <div class="mobile-header">
+                    <el-button link @click="closeMobilePreview">
+                        <el-icon :size="20">
+                            <Back />
+                        </el-icon>
+                    </el-button>
+                    <span class="title">{{ selectedFile?.name }}</span>
+                    <el-dropdown trigger="click">
+                        <el-icon :size="20">
+                            <MoreFilled />
+                        </el-icon>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="openOperation">Actions</el-dropdown-item>
+                                <el-dropdown-item @click="openInfo">Info</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
+
+                <div class="mobile-content">
+                    <div class="preview-section mobile">
+                        <div class="preview-content">
+                            <img v-if="isImage" :src="previewUrl" class="preview-media" />
+                            <video v-else-if="isVideo" :src="previewUrl" controls class="preview-media"></video>
+                            <div v-else-if="isText" class="text-preview" v-loading="loadingText">
+                                <pre><code>{{ textContent }}</code></pre>
+                            </div>
+                            <div v-else class="no-preview">
+                                <el-icon :size="64">
+                                    <Document />
+                                </el-icon>
+                                <p>Preview not available</p>
+                                <a :href="previewUrl" target="_blank">
+                                    <el-button type="primary">Download</el-button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-drawer>
 
         <FileOperationDialog v-model="operationVisible" :file="selectedFile" :updating="updating"
             :generating="generating" :deleting="deleting" @update-permission="doUpdatePermission"
@@ -354,7 +441,7 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .list-container {
     height: 100%;
     padding: 0;
@@ -368,19 +455,24 @@ onMounted(() => {
 .col-list,
 .col-preview {
     height: 100%;
+    transition: all 0.3s ease;
 }
 
-.box-card {
+.panel-card {
     display: flex;
     flex-direction: column;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    background: transparent;
+    background: rgba(30, 41, 59, 0.6); // Override
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+
+    &.no-padding {
+        padding: 0;
+    }
 }
 
-.col-list .box-card {
-    border-right: 1px solid #ebeef5;
+.col-preview .panel-card {
+    margin-left: 12px;
 }
 
 .card-header {
@@ -388,58 +480,64 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-    color: #303133;
-    padding: 0 10px;
-    /* Add some horizontal padding to header */
-    height: 32px;
-    /* Ensure consistent height for alignment */
+    color: var(--color-text-primary);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+
+    &.padding {
+        padding: 16px 20px;
+    }
 }
 
 .header-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
 }
 
 /* File List Styles */
 .file-list-ul {
     list-style: none;
-    padding: 8px;
+    padding: 12px;
     margin: 0;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .file-list-ul li {
-    padding: 8px 12px;
-    margin-bottom: 2px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    transition: all 0.1s ease;
-    color: #1f2329;
+    transition: all 0.2s ease;
+    color: var(--color-text-secondary);
     font-size: 14px;
-    height: 36px;
+    height: 40px;
     box-sizing: border-box;
+    border: 1px solid transparent;
 }
 
 .file-list-ul li:hover {
-    background-color: #eff0f1;
-    color: #1f2329;
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--color-text-primary);
 }
 
 .file-list-ul li.active {
-    background-color: #e4f2ff;
-    color: #0066cc;
+    background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+    color: var(--color-primary);
+    border-color: rgba(6, 182, 212, 0.2);
     font-weight: 500;
 }
 
 .caret-wrapper {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 2px;
-    color: #8f959e;
+    margin-right: 4px;
+    color: var(--color-text-tertiary);
     flex-shrink: 0;
 }
 
@@ -453,16 +551,10 @@ onMounted(() => {
 }
 
 .file-icon {
-    margin-right: 8px;
+    margin-right: 10px;
     font-size: 18px;
     display: flex;
     align-items: center;
-}
-
-/* Specific icon colors if needed, but getFileIcon handles type logic. 
-   We can style the icon wrapper color here if we want generic folder color */
-.file-icon :deep(svg) {
-    /* Ensure svg inherits color */
 }
 
 .file-name {
@@ -476,7 +568,7 @@ onMounted(() => {
 
 .empty-list,
 .empty-preview {
-    color: #909399;
+    color: var(--color-text-tertiary);
     text-align: center;
     padding: 40px;
     display: flex;
@@ -484,7 +576,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     height: 100%;
-    gap: 10px;
+    gap: 16px;
     font-size: 14px;
 }
 
@@ -492,7 +584,8 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    gap: 20px;
+    padding: 20px;
+    overflow: hidden;
 }
 
 .preview-section {
@@ -500,17 +593,16 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
-    padding: 20px;
-    background-color: #fff;
-}
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.2);
+    overflow: hidden;
 
-.preview-header {
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: #303133;
-    font-size: 15px;
+    &.mobile {
+        height: 100%;
+        border: none;
+        background: transparent;
+    }
 }
 
 .preview-content {
@@ -518,36 +610,35 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    background-color: #f8fafc;
-    border-radius: 6px;
-    border: 1px dashed #dcdfe6;
+    overflow: auto;
+    padding: 20px;
 }
 
 .preview-media {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
 }
 
 .text-preview {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: #f8fafc;
+    background-color: rgba(0, 0, 0, 0.3);
     padding: 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     text-align: left;
     box-sizing: border-box;
 }
 
 .text-preview pre {
     margin: 0;
-    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-family: var(--font-family-mono);
     font-size: 13px;
     line-height: 1.6;
-    color: #333;
+    color: var(--color-text-primary);
     white-space: pre-wrap;
     word-break: break-all;
 }
@@ -558,6 +649,79 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    color: #909399;
+    color: var(--color-text-tertiary);
+}
+
+/* Mobile Specific */
+.hidden-mobile-block {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .col-preview.hidden-mobile-block {
+        display: none;
+    }
+
+    .col-list {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .col-preview .panel-card {
+        margin-left: 0;
+    }
+}
+
+.mobile-preview-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+}
+
+.mobile-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--color-bg-secondary);
+
+    .title {
+        font-weight: 600;
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+}
+
+.mobile-content {
+    flex: 1;
+    overflow: hidden;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Custom Scrollbar class */
+.custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
 }
 </style>

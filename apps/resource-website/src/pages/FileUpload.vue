@@ -119,16 +119,16 @@ const uploadAll = async () => {
         <div class="upload-container">
             <!-- Header -->
             <div class="header-section">
-                <h2>文件上传</h2>
-                <p class="subtitle">支持大文件分片上传，拖拽文件至下方区域即可添加</p>
+                <h2>Upload Files</h2>
+                <p class="subtitle">Drag & drop files here or click to select</p>
                 <div class="path-input-wrapper">
-                    <el-input v-model="uploadPath" placeholder="设置上传目录（默认根目录 ./）" :prefix-icon="Folder"
-                        class="custom-input" />
+                    <el-input v-model="uploadPath" placeholder="Upload path (default: ./)" :prefix-icon="Folder"
+                        class="custom-input glass-input" />
                 </div>
             </div>
 
             <!-- Drop Zone -->
-            <div class="drop-zone" :class="{ 'is-dragging': isDragging }" @dragover="onDragOver"
+            <div class="drop-zone glass-card" :class="{ 'is-dragging': isDragging }" @dragover="onDragOver"
                 @dragleave="onDragLeave" @drop="onDrop" @click="triggerFileInput">
                 <input type="file" ref="fileInput" multiple class="hidden-input" @change="onFileChange" />
                 <div class="drop-content">
@@ -138,64 +138,73 @@ const uploadAll = async () => {
                         </el-icon>
                     </div>
                     <div class="drop-text">
-                        <span class="highlight">点击上传</span> 或将文件拖拽到此处
+                        <span class="highlight">Click to upload</span> or drag and drop
                     </div>
-                    <div class="drop-hint">支持任意类型文件</div>
+                    <div class="drop-hint">Supports all file types (Large file support enabled)</div>
                 </div>
+                
+                <!-- Corner Decorations -->
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
             </div>
 
             <!-- Action Bar -->
             <div class="action-bar" v-if="uploadList.length > 0">
                 <div class="list-summary">
-                    已选择 {{ uploadList.length }} 个文件
+                    Selected {{ uploadList.length }} files
                 </div>
                 <div class="buttons">
-                    <button class="btn btn-secondary" @click="uploadList = []">清空列表</button>
-                    <button class="btn btn-primary" @click="uploadAll">开始上传</button>
+                    <button class="btn btn-secondary" @click="uploadList = []">Clear</button>
+                    <button class="btn btn-primary" @click="uploadAll">Start Upload</button>
                 </div>
             </div>
 
             <!-- File List -->
             <div class="file-list" v-if="uploadList.length > 0">
-                <div v-for="item in uploadList" :key="item.id" class="file-card">
-                    <div class="file-icon-wrapper" :style="{ color: getIconColor(item.name) }">
-                        <component :is="getFileIcon(item.name)" />
-                    </div>
-
-                    <div class="file-info">
-                        <div class="file-header">
-                            <span class="file-name" :title="item.name">{{ item.name }}</span>
-                            <span class="file-size">{{ formatSize(item.size) }}</span>
+                <transition-group name="list">
+                    <div v-for="item in uploadList" :key="item.id" class="file-card glass-card">
+                        <div class="file-icon-wrapper" :style="{ color: getIconColor(item.name) }">
+                            <component :is="getFileIcon(item.name)" />
                         </div>
 
-                        <!-- Progress Bar -->
-                        <div class="progress-track" v-if="item.status !== 'pending'">
-                            <div class="progress-fill" :class="item.status" :style="{ width: item.progress + '%' }">
+                        <div class="file-info">
+                            <div class="file-header">
+                                <span class="file-name" :title="item.name">{{ item.name }}</span>
+                                <span class="file-size">{{ formatSize(item.size) }}</span>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress-track" v-if="item.status !== 'pending'">
+                                <div class="progress-fill" :class="item.status" :style="{ width: item.progress + '%' }">
+                                    <div class="glow-bar"></div>
+                                </div>
+                            </div>
+
+                            <div class="file-status">
+                                <span v-if="item.status === 'pending'" class="status-text pending">Pending</span>
+                                <span v-else-if="item.status === 'uploading'" class="status-text uploading">{{ item.message
+                                    }}</span>
+                                <span v-else-if="item.status === 'success'" class="status-text success">Success</span>
+                                <span v-else-if="item.status === 'error'" class="status-text error">{{ item.message
+                                    }}</span>
                             </div>
                         </div>
 
-                        <div class="file-status">
-                            <span v-if="item.status === 'pending'" class="status-text pending">等待上传</span>
-                            <span v-else-if="item.status === 'uploading'" class="status-text uploading">{{ item.message
-                                }}</span>
-                            <span v-else-if="item.status === 'success'" class="status-text success">上传成功</span>
-                            <span v-else-if="item.status === 'error'" class="status-text error">{{ item.message
-                                }}</span>
-                        </div>
+                        <button class="remove-btn" @click.stop="removeFile(item.id)">
+                            <el-icon>
+                                <Close />
+                            </el-icon>
+                        </button>
                     </div>
-
-                    <button class="remove-btn" @click.stop="removeFile(item.id)">
-                        <el-icon>
-                            <Close />
-                        </el-icon>
-                    </button>
-                </div>
+                </transition-group>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .upload-page {
     height: 100%;
     overflow-y: auto;
@@ -205,24 +214,25 @@ const uploadAll = async () => {
 .upload-container {
     max-width: 800px;
     margin: 0 auto;
-    background-color: transparent;
+    padding-bottom: 40px;
 }
 
 .header-section {
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     text-align: center;
 }
 
 .header-section h2 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1d2129;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-text-primary);
     margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
 }
 
 .subtitle {
     font-size: 14px;
-    color: #86909c;
+    color: var(--color-text-secondary);
     margin: 0;
 }
 
@@ -234,44 +244,55 @@ const uploadAll = async () => {
 
 .custom-input {
     width: 360px;
+    max-width: 100%;
 }
 
 .custom-input :deep(.el-input__wrapper) {
-    background-color: #f7f8fa;
+    background-color: rgba(255, 255, 255, 0.05);
     box-shadow: none;
-    border: 1px solid #e5e6eb;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 8px 12px;
     transition: all 0.2s;
 }
 
 .custom-input :deep(.el-input__wrapper:hover) {
-    background-color: #f2f3f5;
-    border-color: #c9cdd4;
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .custom-input :deep(.el-input__wrapper.is-focus) {
-    background-color: #ffffff;
-    border-color: #0066ff;
-    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary-glow);
+}
+
+.custom-input :deep(.el-input__inner) {
+    color: var(--color-text-primary);
 }
 
 /* Drop Zone */
 .drop-zone {
-    background-color: #ffffff;
-    border: 1px dashed #e5e6eb;
-    border-radius: 12px;
-    padding: 40px;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    padding: 60px 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 24px;
+    transition: all 0.3s ease;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
 }
 
 .drop-zone:hover,
 .drop-zone.is-dragging {
-    border-color: #0066ff;
-    background-color: #f2f7ff;
+    border-color: var(--color-primary);
+    background: rgba(6, 182, 212, 0.05);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+    
+    .icon-circle {
+        transform: scale(1.1);
+        color: var(--color-primary);
+        background: rgba(6, 182, 212, 0.1);
+    }
 }
 
 .hidden-input {
@@ -282,49 +303,71 @@ const uploadAll = async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
 }
 
 .icon-circle {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    background-color: #f2f3f5;
+    background-color: rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    color: #4e5969;
-    margin-bottom: 4px;
+    font-size: 32px;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
 }
 
 .drop-text {
-    font-size: 16px;
-    color: #1d2129;
+    font-size: 18px;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
 .highlight {
-    color: #0066ff;
+    color: var(--color-primary);
+    font-weight: 600;
 }
 
 .drop-hint {
-    font-size: 12px;
-    color: #86909c;
+    font-size: 13px;
+    color: var(--color-text-tertiary);
 }
+
+/* Corner Decorations */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.drop-zone:hover .corner {
+    border-color: var(--color-primary);
+}
+
+.top-left { top: -1px; left: -1px; border-top: 2px solid rgba(255,255,255,0.1); border-left: 2px solid rgba(255,255,255,0.1); }
+.top-right { top: -1px; right: -1px; border-top: 2px solid rgba(255,255,255,0.1); border-right: 2px solid rgba(255,255,255,0.1); }
+.bottom-left { bottom: -1px; left: -1px; border-bottom: 2px solid rgba(255,255,255,0.1); border-left: 2px solid rgba(255,255,255,0.1); }
+.bottom-right { bottom: -1px; right: -1px; border-bottom: 2px solid rgba(255,255,255,0.1); border-right: 2px solid rgba(255,255,255,0.1); }
 
 /* Action Bar */
 .action-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     padding: 0 4px;
 }
 
 .list-summary {
     font-size: 14px;
-    color: #4e5969;
+    color: var(--color-text-secondary);
 }
 
 .buttons {
@@ -333,31 +376,39 @@ const uploadAll = async () => {
 }
 
 .btn {
-    padding: 8px 20px;
-    border-radius: 6px;
+    padding: 8px 24px;
+    border-radius: 8px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     border: none;
     transition: all 0.2s;
 }
 
 .btn-primary {
-    background-color: #0066ff;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #005ce6;
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px var(--color-primary-glow);
+    
+    &:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+    }
+    
+    &:active {
+        transform: translateY(0);
+    }
 }
 
 .btn-secondary {
-    background-color: #f2f3f5;
-    color: #4e5969;
-}
-
-.btn-secondary:hover {
-    background-color: #e5e6eb;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-primary);
+    }
 }
 
 /* File List */
@@ -368,20 +419,17 @@ const uploadAll = async () => {
 }
 
 .file-card {
-    background-color: #ffffff;
-    border: 1px solid #e5e6eb;
-    border-radius: 12px;
     padding: 16px;
     display: flex;
     align-items: center;
     gap: 16px;
     position: relative;
     transition: all 0.2s;
-}
-
-.file-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-color: #c9cdd4;
+    
+    &:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 }
 
 .file-icon-wrapper {
@@ -392,15 +440,16 @@ const uploadAll = async () => {
     justify-content: center;
     font-size: 32px;
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
 }
 
 .file-info {
     flex: 1;
     min-width: 0;
-    /* Enable truncation */
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .file-header {
@@ -413,7 +462,7 @@ const uploadAll = async () => {
 .file-name {
     font-size: 14px;
     font-weight: 600;
-    color: #1d2129;
+    color: var(--color-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -421,8 +470,9 @@ const uploadAll = async () => {
 
 .file-size {
     font-size: 12px;
-    color: #86909c;
+    color: var(--color-text-tertiary);
     flex-shrink: 0;
+    font-family: var(--font-family-mono);
 }
 
 .file-status {
@@ -430,62 +480,87 @@ const uploadAll = async () => {
     min-height: 18px;
 }
 
-.status-text.pending {
-    color: #86909c;
-}
-
-.status-text.uploading {
-    color: #0066ff;
-}
-
-.status-text.success {
-    color: #00b42a;
-}
-
-.status-text.error {
-    color: #f53f3f;
-}
+.status-text.pending { color: var(--color-text-secondary); }
+.status-text.uploading { color: var(--color-primary); }
+.status-text.success { color: var(--color-success); }
+.status-text.error { color: var(--color-danger); }
 
 /* Progress Bar */
 .progress-track {
     height: 4px;
-    background-color: #f2f3f5;
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     overflow: hidden;
-    margin-top: 4px;
 }
 
 .progress-fill {
     height: 100%;
-    background-color: #0066ff;
+    background-color: var(--color-primary);
     transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.progress-fill.success {
-    background-color: #00b42a;
+.progress-fill .glow-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 1.5s infinite;
 }
 
-.progress-fill.error {
-    background-color: #f53f3f;
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
+
+.progress-fill.success { background-color: var(--color-success); }
+.progress-fill.error { background-color: var(--color-danger); }
 
 .remove-btn {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border: none;
     background: transparent;
-    color: #c9cdd4;
+    color: var(--color-text-tertiary);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
     flex-shrink: 0;
+    
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-primary);
+    }
 }
 
-.remove-btn:hover {
-    background-color: #f2f3f5;
-    color: #4e5969;
+/* List Transitions */
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.3s ease;
+}
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@media (max-width: 600px) {
+    .upload-container {
+        padding-bottom: 20px;
+    }
+    
+    .file-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .drop-zone {
+        padding: 40px 20px;
+    }
 }
 </style>

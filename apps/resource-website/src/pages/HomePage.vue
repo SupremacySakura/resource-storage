@@ -1,10 +1,12 @@
 <script lang="ts" setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import {
     Menu as IconMenu,
     UploadFilled,
-    Document
+    Document,
+    Fold
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
 
@@ -13,17 +15,17 @@ const userStore = useUserStore()
 
 const menuItems = [
     {
-        title: '控制台',
+        title: 'Dashboard',
         path: '/home/dashboard',
         icon: IconMenu
     },
     {
-        title: '文件列表',
+        title: 'Files',
         path: '/home/files/list',
         icon: Document
     },
     {
-        title: '文件上传',
+        title: 'Upload',
         path: '/home/files/upload',
         icon: UploadFilled
     },
@@ -35,22 +37,71 @@ const handleLogout = () => {
     userStore.logout()
     router.push('/login')
 }
+
+// Mobile Responsiveness Logic
+const windowWidth = ref(window.innerWidth)
+const sidebarOpen = ref(false)
+
+const isMobile = computed(() => windowWidth.value < 1024) // Breakpoint at 1024px
+
+const handleResize = () => {
+    windowWidth.value = window.innerWidth
+    if (!isMobile.value) {
+        sidebarOpen.value = false // Reset state on desktop
+    }
+}
+
+const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+    sidebarOpen.value = false
+}
+
+onMounted(() => {
+    window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <template>
     <el-container class="layout-container">
-        <Sidebar :menu-items="menuItems" :username="username" @logout="handleLogout" />
+        <!-- Sidebar -->
+        <Sidebar 
+            :menu-items="menuItems" 
+            :username="username" 
+            :is-mobile="isMobile"
+            :is-open="sidebarOpen"
+            @logout="handleLogout"
+            @close="closeSidebar"
+        />
 
         <!-- Main Content -->
-        <el-main class="main-content">
-            <div class="page-container">
-                <router-view v-slot="{ Component }">
-                    <transition name="fade" mode="out-in">
-                        <component :is="Component" />
-                    </transition>
-                </router-view>
+        <el-container class="content-wrapper">
+            <!-- Mobile Header -->
+            <div v-if="isMobile" class="mobile-header glass-card">
+                <div class="header-left">
+                    <div class="menu-btn" @click="toggleSidebar">
+                        <el-icon><Fold /></el-icon>
+                    </div>
+                    <span class="page-title">Resource<span class="highlight">OS</span></span>
+                </div>
             </div>
-        </el-main>
+
+            <el-main class="main-content">
+                <div class="page-container glass-card">
+                    <router-view v-slot="{ Component }">
+                        <transition name="fade" mode="out-in">
+                            <component :is="Component" />
+                        </transition>
+                    </router-view>
+                </div>
+            </el-main>
+        </el-container>
     </el-container>
 </template>
 
@@ -59,34 +110,79 @@ const handleLogout = () => {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background-color: #f7f8fa;
+    background-color: var(--color-bg-base);
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
 }
 
-.main-content {
-    background-color: #f7f8fa;
-    padding: 12px;
-    /* Spacing around the white card */
-    overflow: hidden;
+.content-wrapper {
+    flex-direction: column;
     height: 100vh;
+    overflow: hidden;
+}
 
-    .page-container {
-        background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        height: 100%;
-        overflow: hidden;
-        position: relative;
+.mobile-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    margin: 12px 12px 0 12px;
+    z-index: 40;
+    border-radius: 12px;
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .menu-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
+
+    .page-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        
+        .highlight {
+            color: var(--color-primary);
+        }
     }
 }
 
-// Fade animation
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s ease;
+.main-content {
+    padding: 20px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .page-container {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        background: rgba(30, 41, 59, 0.4); // More transparent
+    }
 }
 
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 12px;
+    }
 }
 </style>
