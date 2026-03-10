@@ -77,7 +77,7 @@ const copyKey = async () => {
                     <el-icon>
                         <Key />
                     </el-icon>
-                    <span>生成 Key</span>
+                    <span>生成密钥</span>
                 </div>
                 <div class="nav-item" :class="{ active: operationTab === 'delete' }" @click="operationTab = 'delete'">
                     <el-icon>
@@ -114,7 +114,7 @@ const copyKey = async () => {
                                     </el-icon></div>
                                 <div class="role-info">
                                     <div class="role-name">密钥访问</div>
-                                    <div class="role-desc">需要有效的 Key 才能访问</div>
+                                    <div class="role-desc">需要有效的密钥才能访问</div>
                                 </div>
                                 <div class="radio-indicator"></div>
                             </div>
@@ -128,8 +128,8 @@ const copyKey = async () => {
                 </div>
                 <div v-else-if="operationTab === 'key'" class="op-section">
                     <div class="op-header">
-                        <div class="op-title">生成访问 Key</div>
-                        <div class="op-subtitle">当文件权限为密钥访问时，生成用于验证的 Key。</div>
+                        <div class="op-title">生成访问密钥</div>
+                        <div class="op-subtitle">当文件权限为密钥访问时，生成用于验证的密钥。</div>
                     </div>
 
                     <div class="key-gen-area">
@@ -144,12 +144,12 @@ const copyKey = async () => {
                         <template v-else>
                             <div class="op-actions">
                                 <el-button type="primary" size="large" :loading="generating" @click="handleGenerateKey">
-                                    {{ file?.key ? '重新生成 Key' : '生成 Key' }}
+                                    {{ file?.key ? '重新生成密钥' : '生成密钥' }}
                                 </el-button>
                             </div>
 
                             <div v-if="file?.key" class="key-result-box">
-                                <div class="key-label">生成的 Key</div>
+                                <div class="key-label">生成的密钥</div>
                                 <div class="key-content">
                                     <div class="key-text">{{ file.key }}</div>
                                     <el-button @click="copyKey" size="small" circle>
@@ -158,7 +158,7 @@ const copyKey = async () => {
                                         </el-icon>
                                     </el-button>
                                 </div>
-                                <div class="key-tip">请妥善保管此 Key，用于文件访问验证。</div>
+                                <div class="key-tip">请妥善保管此密钥，用于文件访问验证。</div>
                             </div>
                         </template>
                     </div>
@@ -197,7 +197,7 @@ const copyKey = async () => {
     display: flex;
     height: 400px;
     margin: -24px;
-    /* Counteract dialog padding */
+    /* 抵消弹窗内边距 */
 }
 
 .op-left {

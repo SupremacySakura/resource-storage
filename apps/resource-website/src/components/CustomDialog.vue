@@ -109,6 +109,7 @@ const close = () => {
     padding: 24px;
     overflow-y: auto;
     color: var(--color-text-primary);
+    min-height: 0;
 }
 
 .dialog-footer {
@@ -177,8 +178,9 @@ const close = () => {
         height: auto;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
+        justify-content: flex-start;
+        min-height: 0;
     }
 
     .dialog-footer {

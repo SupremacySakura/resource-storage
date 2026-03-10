@@ -57,7 +57,7 @@ const handleClose = () => {
                             </div>
                         </div>
                         <span class="progress-text">{{ Math.round((file.chunks.length / file.chunkCount) * 100)
-                        }}%</span>
+                            }}%</span>
                     </div>
                 </div>
                 <div class="info-item vertical">
@@ -82,6 +82,10 @@ const handleClose = () => {
     gap: 16px;
 }
 
+.info-content {
+    width: 100%;
+}
+
 .info-item {
     display: grid;
     grid-template-columns: 100px 1fr;
@@ -104,6 +108,10 @@ const handleClose = () => {
     color: var(--color-text-primary);
     font-size: 14px;
     word-break: break-all;
+    width: 100%;
+    /* Ensure full width usage */
+    box-sizing: border-box;
+    /* Include padding/border in width */
 }
 
 .text-strong {
@@ -181,16 +189,29 @@ const handleClose = () => {
     .info-item {
         grid-template-columns: 1fr;
         /* Stack vertically on mobile */
-        gap: 4px;
+        gap: 8px;
+        /* Increased gap */
         align-items: start;
+        width: 100%;
+        /* Full width container */
+    }
+
+    .info-grid {
+        width: 100%;
+        /* Full width grid */
+        gap: 12px;
     }
 
     .label {
-        font-size: 12px;
+        font-size: 13px;
+        /* Slightly larger for readability */
+        color: var(--color-text-tertiary);
     }
 
     .value {
         font-size: 15px;
+        line-height: 1.5;
+        /* Better line height for multi-line text */
     }
 }
 </style>

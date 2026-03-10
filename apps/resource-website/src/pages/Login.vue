@@ -58,30 +58,30 @@ const handleLogin = async () => {
                             stroke-linejoin="round" />
                     </svg>
                 </div>
-                <h1 class="brand-title">Resource Storage</h1>
-                <p class="brand-desc">Secure. Fast. Futuristic.</p>
+                <h1 class="brand-title">资源存储</h1>
+                <p class="brand-desc">安全 · 高效 · 可靠</p>
             </div>
 
             <div class="login-card glass-card">
                 <div class="login-header">
-                    <h2>Welcome Back</h2>
-                    <p>Access your digital assets</p>
+                    <h2>欢迎回来</h2>
+                    <p>登录后管理你的资源</p>
                 </div>
 
                 <form class="login-form" @submit.prevent="handleLogin">
                     <div class="form-group">
-                        <label for="username">Username</label>
+                        <label for="username">用户名</label>
                         <div class="input-wrapper">
-                            <input id="username" v-model="username" type="text" placeholder="Enter username" required
+                            <input id="username" v-model="username" type="text" placeholder="请输入用户名" required
                                 autocomplete="username" />
                             <div class="input-glow"></div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Password</label>
+                        <label for="password">密码</label>
                         <div class="input-wrapper">
-                            <input id="password" v-model="password" type="password" placeholder="Enter password"
+                            <input id="password" v-model="password" type="password" placeholder="请输入密码"
                                 required autocomplete="current-password" />
                             <div class="input-glow"></div>
                         </div>
@@ -90,14 +90,14 @@ const handleLogin = async () => {
                     <div class="form-options">
                         <label class="remember-me">
                             <input v-model="rememberMe" type="checkbox" />
-                            <span>Remember me</span>
+                            <span>记住我</span>
                         </label>
-                        <a href="#" class="forgot-password">Forgot password?</a>
+                        <a href="#" class="forgot-password">忘记密码？</a>
                     </div>
 
                     <button type="submit" class="login-button" :disabled="isLoading">
                         <span v-if="isLoading" class="loading-spinner"></span>
-                        <span v-else>Login</span>
+                        <span v-else>登录</span>
                     </button>
 
                     <div v-if="errorMessage" class="error-message">

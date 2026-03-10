@@ -77,9 +77,9 @@ onMounted(() => {
                         </el-icon>
                     </div>
                     <div class="metric-content">
-                        <span class="label">Total Files</span>
+                        <span class="label">文件总数</span>
                         <div class="value">{{ totalFiles }}</div>
-                        <div class="sub">Completed: {{ completedCount }}</div>
+                        <div class="sub">已完成：{{ completedCount }}</div>
                     </div>
                 </div>
 
@@ -90,9 +90,9 @@ onMounted(() => {
                         </el-icon>
                     </div>
                     <div class="metric-content">
-                        <span class="label">Storage Used</span>
+                        <span class="label">存储占用</span>
                         <div class="value">{{ formatSize(totalSize) }}</div>
-                        <div class="sub">Avg: {{ formatSize(avgSize) }}</div>
+                        <div class="sub">平均：{{ formatSize(avgSize) }}</div>
                     </div>
                 </div>
 
@@ -103,7 +103,7 @@ onMounted(() => {
                         </el-icon>
                     </div>
                     <div class="metric-content">
-                        <span class="label">Public Files</span>
+                        <span class="label">公开文件</span>
                         <div class="value">{{ publicCount }}</div>
                         <div class="progress-mini">
                             <div class="bar"
@@ -120,7 +120,7 @@ onMounted(() => {
                         </el-icon>
                     </div>
                     <div class="metric-content">
-                        <span class="label">Private Files</span>
+                        <span class="label">密钥文件</span>
                         <div class="value">{{ keyCount }}</div>
                         <div class="progress-mini">
                             <div class="bar"
@@ -136,7 +136,7 @@ onMounted(() => {
             <div class="column-item">
                 <div class="panel-card glass-card">
                     <div class="panel-header">
-                        <h3>Storage Overview</h3>
+                        <h3>存储概览</h3>
                         <el-button link type="primary" @click="fetchFiles">
                             <el-icon>
                                 <Refresh />
@@ -149,44 +149,44 @@ onMounted(() => {
                                 <el-icon class="icon-img">
                                     <Picture />
                                 </el-icon>
-                                <span>Images</span>
+                                <span>图片</span>
                             </div>
                             <el-progress :percentage="typePercent.images" :stroke-width="6"
                                 :color="'var(--color-primary)'" />
-                            <div class="overview-sub">{{ imagesCount }} files</div>
+                            <div class="overview-sub">{{ imagesCount }} 个</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
                                 <el-icon class="icon-vid">
                                     <VideoCamera />
                                 </el-icon>
-                                <span>Videos</span>
+                                <span>视频</span>
                             </div>
                             <el-progress :percentage="typePercent.videos" :stroke-width="6"
                                 :color="'var(--color-secondary)'" />
-                            <div class="overview-sub">{{ videosCount }} files</div>
+                            <div class="overview-sub">{{ videosCount }} 个</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
                                 <el-icon class="icon-aud">
                                     <Service />
                                 </el-icon>
-                                <span>Audios</span>
+                                <span>音频</span>
                             </div>
                             <el-progress :percentage="typePercent.audios" :stroke-width="6"
                                 :color="'var(--color-success)'" />
-                            <div class="overview-sub">{{ audiosCount }} files</div>
+                            <div class="overview-sub">{{ audiosCount }} 个</div>
                         </div>
                         <div class="overview-item">
                             <div class="overview-title">
                                 <el-icon class="icon-oth">
                                     <Document />
                                 </el-icon>
-                                <span>Others</span>
+                                <span>其他</span>
                             </div>
                             <el-progress :percentage="typePercent.others" :stroke-width="6"
                                 :color="'var(--color-info)'" />
-                            <div class="overview-sub">{{ othersCount }} files</div>
+                            <div class="overview-sub">{{ othersCount }} 个</div>
                         </div>
                     </div>
                 </div>
@@ -195,7 +195,7 @@ onMounted(() => {
             <div class="column-item">
                 <div class="panel-card glass-card">
                     <div class="panel-header">
-                        <h3>Privacy Distribution</h3>
+                        <h3>权限分布</h3>
                         <el-button link type="primary" @click="fetchFiles">
                             <el-icon>
                                 <Refresh />
@@ -205,21 +205,21 @@ onMounted(() => {
                     <div class="privacy-grid">
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <span class="badge success">Public</span>
+                                <span class="badge success">公开</span>
                             </div>
                             <div class="privacy-value">{{ publicCount }}</div>
                             <el-progress :percentage="privacyPublicPercent" :stroke-width="6" status="success" />
                         </div>
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <span class="badge warning">Key Protected</span>
+                                <span class="badge warning">密钥保护</span>
                             </div>
                             <div class="privacy-value">{{ keyCount }}</div>
                             <el-progress :percentage="privacyKeyPercent" :stroke-width="6" status="warning" />
                         </div>
                         <div class="privacy-item">
                             <div class="privacy-title">
-                                <span class="badge info">Uploaded</span>
+                                <span class="badge info">已完成</span>
                             </div>
                             <div class="privacy-value">{{ completedPercent }}%</div>
                             <el-progress :percentage="completedPercent" :stroke-width="6" />
@@ -233,7 +233,7 @@ onMounted(() => {
         <div class="section-block">
             <div class="panel-card glass-card no-padding">
                 <div class="panel-header padding">
-                    <h3>Recent Files</h3>
+                    <h3>最近文件</h3>
                     <el-button link type="primary" @click="fetchFiles">
                         <el-icon>
                             <Refresh />
@@ -241,11 +241,11 @@ onMounted(() => {
                     </el-button>
                 </div>
 
-                <div v-if="recentFiles.length === 0" class="empty-list">No data available</div>
+                <div v-if="recentFiles.length === 0" class="empty-list">暂无数据</div>
 
                 <div v-else class="responsive-table-wrapper">
                     <el-table :data="recentFiles" style="width: 100%" class="transparent-table">
-                        <el-table-column prop="name" label="Filename" min-width="200">
+                        <el-table-column prop="name" label="文件名" min-width="200">
                             <template #default="{ row }">
                                 <div class="file-name-cell">
                                     <el-icon class="file-icon">
@@ -255,19 +255,19 @@ onMounted(() => {
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="size" label="Size" width="120">
+                        <el-table-column prop="size" label="大小" width="120">
                             <template #default="{ row }">
                                 <span class="mono-text">{{ formatSize(row.size) }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="role" label="Permission" width="120">
+                        <el-table-column prop="role" label="权限" width="120">
                             <template #default="{ row }">
                                 <span class="badge" :class="row.role === 'public' ? 'success' : 'warning'">
-                                    {{ row.role === 'public' ? 'Public' : 'Key' }}
+                                    {{ row.role === 'public' ? '公开' : '密钥' }}
                                 </span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="modifiedTime" label="Modified" width="180">
+                        <el-table-column prop="modifiedTime" label="修改时间" width="180">
                             <template #default="{ row }">
                                 <span class="mono-text">{{ formatDate(row.modifiedTime) }}</span>
                             </template>

@@ -37,6 +37,11 @@ const routes: RouteRecordRaw[] = [
                 component: () => import('../pages/Dashboard.vue'),
             },
             {
+                path: 'api-docs',
+                name: 'ApiDocs',
+                component: () => import('../pages/ApiDocs.vue'),
+            },
+            {
                 path: 'files/upload',
                 name: 'Upload',
                 component: () => import('../pages/FileUpload.vue')

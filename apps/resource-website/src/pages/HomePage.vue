@@ -6,6 +6,7 @@ import {
     Menu as IconMenu,
     UploadFilled,
     Document,
+    Service,
     Fold
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
@@ -15,23 +16,28 @@ const userStore = useUserStore()
 
 const menuItems = [
     {
-        title: 'Dashboard',
+        title: '仪表盘',
         path: '/home/dashboard',
         icon: IconMenu
     },
     {
-        title: 'Files',
+        title: 'API 文档',
+        path: '/home/api-docs',
+        icon: Service
+    },
+    {
+        title: '文件列表',
         path: '/home/files/list',
         icon: Document
     },
     {
-        title: 'Upload',
+        title: '上传文件',
         path: '/home/files/upload',
         icon: UploadFilled
     },
 ]
 
-const username = 'Admin'
+const username = '管理员'
 
 const handleLogout = () => {
     userStore.logout()
@@ -71,14 +77,8 @@ onUnmounted(() => {
 <template>
     <el-container class="layout-container">
         <!-- Sidebar -->
-        <Sidebar 
-            :menu-items="menuItems" 
-            :username="username" 
-            :is-mobile="isMobile"
-            :is-open="sidebarOpen"
-            @logout="handleLogout"
-            @close="closeSidebar"
-        />
+        <Sidebar :menu-items="menuItems" :username="username" :is-mobile="isMobile" :is-open="sidebarOpen"
+            @logout="handleLogout" @close="closeSidebar" />
 
         <!-- Main Content -->
         <el-container class="content-wrapper">
@@ -86,9 +86,11 @@ onUnmounted(() => {
             <div v-if="isMobile" class="mobile-header glass-card">
                 <div class="header-left">
                     <div class="menu-btn" @click="toggleSidebar">
-                        <el-icon><Fold /></el-icon>
+                        <el-icon>
+                            <Fold />
+                        </el-icon>
                     </div>
-                    <span class="page-title">Resource<span class="highlight">OS</span></span>
+                    <span class="page-title">资源<span class="highlight">存储</span></span>
                 </div>
             </div>
 
@@ -111,7 +113,7 @@ onUnmounted(() => {
     width: 100vw;
     overflow: hidden;
     background-color: var(--color-bg-base);
-    background-image: 
+    background-image:
         radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 25%),
         radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
 }
@@ -158,7 +160,7 @@ onUnmounted(() => {
         font-size: 18px;
         font-weight: 700;
         color: var(--color-text-primary);
-        
+
         .highlight {
             color: var(--color-primary);
         }

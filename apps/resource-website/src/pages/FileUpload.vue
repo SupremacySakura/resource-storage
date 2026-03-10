@@ -73,30 +73,30 @@ const processUpload = async (item: UploadFileItem) => {
 
     item.status = 'uploading'
     item.progress = 0
-    item.message = 'Preparing...'
+    item.message = '准备中…'
 
     try {
         const res = await uploadFile(item.file, userStore.token, uploadPath.value || './', (percent) => {
             item.progress = percent
             if (percent < 100) {
-                item.message = `Uploading... ${percent}%`
+                item.message = `上传中… ${percent}%`
             } else {
-                item.message = 'Processing...'
+                item.message = '处理中…'
             }
         })
 
         if (res.success === true) {
             item.progress = 100
             item.status = 'success'
-            item.message = 'Completed'
+            item.message = '完成'
         } else {
             item.status = 'error'
-            item.message = res.message || 'Upload failed'
+            item.message = res.message || '上传失败'
         }
     } catch (error) {
         console.error(error)
         item.status = 'error'
-        item.message = 'Network error'
+        item.message = '网络错误'
     }
 }
 
@@ -104,7 +104,7 @@ const processUpload = async (item: UploadFileItem) => {
 const uploadAll = async () => {
     const pendingFiles = uploadList.value.filter(item => item.status === 'pending' || item.status === 'error')
     if (pendingFiles.length === 0) {
-        ElMessage.warning('No pending files to upload')
+        ElMessage.warning('没有待上传的文件')
         return
     }
 
@@ -119,10 +119,10 @@ const uploadAll = async () => {
         <div class="upload-container">
             <!-- Header -->
             <div class="header-section">
-                <h2>Upload Files</h2>
-                <p class="subtitle">Drag & drop files here or click to select</p>
+                <h2>上传文件</h2>
+                <p class="subtitle">拖拽文件到此处，或点击选择文件</p>
                 <div class="path-input-wrapper">
-                    <el-input v-model="uploadPath" placeholder="Upload path (default: ./)" :prefix-icon="Folder"
+                    <el-input v-model="uploadPath" placeholder="上传路径（默认：./）" :prefix-icon="Folder"
                         class="custom-input glass-input" />
                 </div>
             </div>
@@ -138,11 +138,11 @@ const uploadAll = async () => {
                         </el-icon>
                     </div>
                     <div class="drop-text">
-                        <span class="highlight">Click to upload</span> or drag and drop
+                        <span class="highlight">点击选择文件</span> 或拖拽到此处
                     </div>
-                    <div class="drop-hint">Supports all file types (Large file support enabled)</div>
+                    <div class="drop-hint">支持所有文件类型（支持大文件分片上传）</div>
                 </div>
-                
+
                 <!-- Corner Decorations -->
                 <div class="corner top-left"></div>
                 <div class="corner top-right"></div>
@@ -153,11 +153,11 @@ const uploadAll = async () => {
             <!-- Action Bar -->
             <div class="action-bar" v-if="uploadList.length > 0">
                 <div class="list-summary">
-                    Selected {{ uploadList.length }} files
+                    已选择 {{ uploadList.length }} 个文件
                 </div>
                 <div class="buttons">
-                    <button class="btn btn-secondary" @click="uploadList = []">Clear</button>
-                    <button class="btn btn-primary" @click="uploadAll">Start Upload</button>
+                    <button class="btn btn-secondary" @click="uploadList = []">清空</button>
+                    <button class="btn btn-primary" @click="uploadAll">开始上传</button>
                 </div>
             </div>
 
@@ -183,10 +183,11 @@ const uploadAll = async () => {
                             </div>
 
                             <div class="file-status">
-                                <span v-if="item.status === 'pending'" class="status-text pending">Pending</span>
-                                <span v-else-if="item.status === 'uploading'" class="status-text uploading">{{ item.message
-                                    }}</span>
-                                <span v-else-if="item.status === 'success'" class="status-text success">Success</span>
+                                <span v-if="item.status === 'pending'" class="status-text pending">待上传</span>
+                                <span v-else-if="item.status === 'uploading'" class="status-text uploading">{{
+                                    item.message
+                                }}</span>
+                                <span v-else-if="item.status === 'success'" class="status-text success">成功</span>
                                 <span v-else-if="item.status === 'error'" class="status-text error">{{ item.message
                                     }}</span>
                             </div>
@@ -287,7 +288,7 @@ const uploadAll = async () => {
     border-color: var(--color-primary);
     background: rgba(6, 182, 212, 0.05);
     box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
-    
+
     .icon-circle {
         transform: scale(1.1);
         color: var(--color-primary);
@@ -351,10 +352,33 @@ const uploadAll = async () => {
     border-color: var(--color-primary);
 }
 
-.top-left { top: -1px; left: -1px; border-top: 2px solid rgba(255,255,255,0.1); border-left: 2px solid rgba(255,255,255,0.1); }
-.top-right { top: -1px; right: -1px; border-top: 2px solid rgba(255,255,255,0.1); border-right: 2px solid rgba(255,255,255,0.1); }
-.bottom-left { bottom: -1px; left: -1px; border-bottom: 2px solid rgba(255,255,255,0.1); border-left: 2px solid rgba(255,255,255,0.1); }
-.bottom-right { bottom: -1px; right: -1px; border-bottom: 2px solid rgba(255,255,255,0.1); border-right: 2px solid rgba(255,255,255,0.1); }
+.top-left {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-right {
+    top: -1px;
+    right: -1px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    border-right: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottom-left {
+    bottom: -1px;
+    left: -1px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottom-right {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-right: 2px solid rgba(255, 255, 255, 0.1);
+}
 
 /* Action Bar */
 .action-bar {
@@ -389,12 +413,12 @@ const uploadAll = async () => {
     background: var(--color-primary);
     color: #fff;
     box-shadow: 0 4px 12px var(--color-primary-glow);
-    
+
     &:hover {
         transform: translateY(-1px);
         filter: brightness(1.1);
     }
-    
+
     &:active {
         transform: translateY(0);
     }
@@ -404,7 +428,7 @@ const uploadAll = async () => {
     background: rgba(255, 255, 255, 0.05);
     color: var(--color-text-secondary);
     border: 1px solid var(--border-color);
-    
+
     &:hover {
         background: rgba(255, 255, 255, 0.1);
         color: var(--color-text-primary);
@@ -425,7 +449,10 @@ const uploadAll = async () => {
     gap: 16px;
     position: relative;
     transition: all 0.2s;
-    
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+
     &:hover {
         transform: translateY(-2px);
         border-color: rgba(255, 255, 255, 0.2);
@@ -455,8 +482,9 @@ const uploadAll = async () => {
 .file-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
+    width: 100%;
 }
 
 .file-name {
@@ -466,6 +494,8 @@ const uploadAll = async () => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
 }
 
 .file-size {
@@ -480,10 +510,21 @@ const uploadAll = async () => {
     min-height: 18px;
 }
 
-.status-text.pending { color: var(--color-text-secondary); }
-.status-text.uploading { color: var(--color-primary); }
-.status-text.success { color: var(--color-success); }
-.status-text.error { color: var(--color-danger); }
+.status-text.pending {
+    color: var(--color-text-secondary);
+}
+
+.status-text.uploading {
+    color: var(--color-primary);
+}
+
+.status-text.success {
+    color: var(--color-success);
+}
+
+.status-text.error {
+    color: var(--color-danger);
+}
 
 /* Progress Bar */
 .progress-track {
@@ -507,17 +548,27 @@ const uploadAll = async () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     animation: shimmer 1.5s infinite;
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
-.progress-fill.success { background-color: var(--color-success); }
-.progress-fill.error { background-color: var(--color-danger); }
+.progress-fill.success {
+    background-color: var(--color-success);
+}
+
+.progress-fill.error {
+    background-color: var(--color-danger);
+}
 
 .remove-btn {
     width: 28px;
@@ -532,7 +583,7 @@ const uploadAll = async () => {
     justify-content: center;
     transition: all 0.2s;
     flex-shrink: 0;
-    
+
     &:hover {
         background-color: rgba(255, 255, 255, 0.1);
         color: var(--color-text-primary);
@@ -544,6 +595,7 @@ const uploadAll = async () => {
 .list-leave-active {
     transition: all 0.3s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
     opacity: 0;
@@ -554,11 +606,11 @@ const uploadAll = async () => {
     .upload-container {
         padding-bottom: 20px;
     }
-    
+
     .file-list {
         grid-template-columns: 1fr;
     }
-    
+
     .drop-zone {
         padding: 40px 20px;
     }

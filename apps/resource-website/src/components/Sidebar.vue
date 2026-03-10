@@ -66,7 +66,7 @@ const sidebarWidth = computed(() => {
                             <Monitor />
                         </el-icon>
                     </div>
-                    <span class="logo-text">Resource<span class="highlight">OS</span></span>
+                    <span class="logo-text">资源<span class="highlight">存储</span></span>
                 </div>
                 
                 <!-- Desktop Toggle -->
@@ -118,7 +118,7 @@ const sidebarWidth = computed(() => {
                         </div>
                         <div v-show="isMobile || !isCollapse" class="user-details">
                             <span class="username">{{ username }}</span>
-                            <span class="role">Administrator</span>
+                            <span class="role">管理员</span>
                         </div>
                         <el-icon v-show="isMobile || !isCollapse" class="el-icon--right">
                             <ArrowDown />
@@ -126,7 +126,7 @@ const sidebarWidth = computed(() => {
                     </div>
                     <template #dropdown>
                         <el-dropdown-menu class="custom-dropdown">
-                            <el-dropdown-item divided @click="handleLogout">Logout</el-dropdown-item>
+                            <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>

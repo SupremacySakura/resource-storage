@@ -132,11 +132,11 @@ const fetchFiles = async () => {
         if (res.success) {
             fileList.value = res.data
         } else {
-            ElMessage.error(res.message || 'Failed to fetch file list')
+            ElMessage.error(res.message || '获取文件列表失败')
         }
     } catch (error) {
         console.error(error)
-        ElMessage.error('Error fetching file list')
+        ElMessage.error('获取文件列表出错')
     } finally {
         loading.value = false
     }
@@ -203,10 +203,10 @@ watch(selectedFile, async (newFile) => {
             if (res.ok) {
                 textContent.value = await res.text()
             } else {
-                textContent.value = 'Failed to load file content: ' + res.statusText
+                textContent.value = '加载文件内容失败：' + res.statusText
             }
         } catch (e) {
-            textContent.value = 'Error loading file content.'
+            textContent.value = '加载文件内容出错。'
         } finally {
             loadingText.value = false
         }
@@ -250,7 +250,7 @@ const doUpdatePermission = async (role: 'public' | 'key') => {
 const doGenerateKey = async () => {
     if (!selectedFile.value) return
     if (selectedFile.value.role !== 'key') {
-        ElMessage.warning('请先将权限设置为 key')
+        ElMessage.warning('请先将权限设置为密钥')
         return
     }
     generating.value = true
@@ -259,12 +259,12 @@ const doGenerateKey = async () => {
         if (res.success) {
             const key = res.data || ''
             selectedFile.value.key = key
-            ElMessage.success('Key 已生成')
+            ElMessage.success('密钥已生成')
         } else {
-            ElMessage.error(res.message || '生成 Key 失败')
+            ElMessage.error(res.message || '生成密钥失败')
         }
     } catch (e) {
-        ElMessage.error('生成 Key 出错')
+        ElMessage.error('生成密钥出错')
     } finally {
         generating.value = false
     }
@@ -311,7 +311,7 @@ const doDeleteFile = async () => {
             <el-col :span="24" :md="6" class="col-list" :class="{ 'hidden-mobile': isMobile && mobilePreviewVisible }">
                 <div class="panel-card glass-card full-height no-padding">
                     <div class="card-header padding">
-                        <span>File Explorer</span>
+                        <span>文件浏览</span>
                         <el-button link type="primary" @click="fetchFiles">
                             <el-icon>
                                 <Refresh />
@@ -320,7 +320,7 @@ const doDeleteFile = async () => {
                     </div>
 
                     <div v-if="fileList.length === 0" class="empty-list">
-                        No files found.
+                        未找到文件
                     </div>
                     <ul v-else class="file-list-ul custom-scrollbar">
                         <li v-for="item in displayItems" :key="item.key"
@@ -346,11 +346,11 @@ const doDeleteFile = async () => {
             <el-col :span="0" :md="18" class="col-preview hidden-mobile-block">
                 <div class="panel-card glass-card full-height">
                     <div class="card-header">
-                        <span>File Details</span>
+                        <span>文件详情</span>
                         <div class="header-actions">
                             <el-button type="primary" size="small" @click="openOperation"
-                                :disabled="!selectedFile">Actions</el-button>
-                            <el-button size="small" @click="openInfo" :disabled="!selectedFile">Info</el-button>
+                                :disabled="!selectedFile">操作</el-button>
+                            <el-button size="small" @click="openInfo" :disabled="!selectedFile">信息</el-button>
                         </div>
                     </div>
 
@@ -358,7 +358,7 @@ const doDeleteFile = async () => {
                         <el-icon :size="48">
                             <Document />
                         </el-icon>
-                        <p>Select a file to view details</p>
+                        <p>请选择一个文件查看详情</p>
                     </div>
 
                     <div v-else class="file-detail-container">
@@ -374,9 +374,9 @@ const doDeleteFile = async () => {
                                     <el-icon :size="64">
                                         <Document />
                                     </el-icon>
-                                    <p>Preview not available</p>
+                                    <p>暂不支持预览</p>
                                     <a :href="previewUrl" target="_blank" class="download-link">
-                                        <el-button type="primary" link>Download</el-button>
+                                        <el-button type="primary" link>下载</el-button>
                                     </a>
                                 </div>
                             </div>
@@ -403,8 +403,8 @@ const doDeleteFile = async () => {
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click="openOperation">Actions</el-dropdown-item>
-                                <el-dropdown-item @click="openInfo">Info</el-dropdown-item>
+                                <el-dropdown-item @click="openOperation">操作</el-dropdown-item>
+                                <el-dropdown-item @click="openInfo">信息</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -422,9 +422,9 @@ const doDeleteFile = async () => {
                                 <el-icon :size="64">
                                     <Document />
                                 </el-icon>
-                                <p>Preview not available</p>
+                                <p>暂不支持预览</p>
                                 <a :href="previewUrl" target="_blank">
-                                    <el-button type="primary">Download</el-button>
+                                    <el-button type="primary">下载</el-button>
                                 </a>
                             </div>
                         </div>
