@@ -50,12 +50,17 @@ const close = () => {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
-    z-index: 9999;
     /* Ensure high z-index to overlay everything */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+}
+
+@media (max-width: 600px) {
+    .custom-dialog-overlay {
+        z-index: 9999;
+    }
 }
 
 .custom-dialog {
