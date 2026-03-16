@@ -68,169 +68,162 @@ onMounted(() => {
 <template>
     <div class="dashboard-container" v-loading="loading">
         <!-- Top: Metrics -->
-        <div class="section-block">
-            <div class="metric-grid">
-                <div class="metric-card glass-card">
-                    <div class="metric-icon-wrapper primary">
-                        <el-icon>
-                            <Document />
-                        </el-icon>
-                    </div>
-                    <div class="metric-content">
-                        <span class="label">文件总数</span>
-                        <div class="value">{{ totalFiles }}</div>
-                        <div class="sub">已完成：{{ completedCount }}</div>
-                    </div>
+        <section class="metrics-section">
+            <div class="metric-card glass-card">
+                <div class="metric-icon-wrapper primary">
+                    <el-icon>
+                        <Document />
+                    </el-icon>
                 </div>
-
-                <div class="metric-card glass-card">
-                    <div class="metric-icon-wrapper secondary">
-                        <el-icon>
-                            <Service />
-                        </el-icon>
-                    </div>
-                    <div class="metric-content">
-                        <span class="label">存储占用</span>
-                        <div class="value">{{ formatSize(totalSize) }}</div>
-                        <div class="sub">平均：{{ formatSize(avgSize) }}</div>
-                    </div>
+                <div class="metric-content">
+                    <span class="label">文件总数</span>
+                    <div class="value">{{ totalFiles }}</div>
+                    <div class="sub">已完成：{{ completedCount }}</div>
                 </div>
+            </div>
 
-                <div class="metric-card glass-card">
-                    <div class="metric-icon-wrapper success">
-                        <el-icon>
-                            <View />
-                        </el-icon>
-                    </div>
-                    <div class="metric-content">
-                        <span class="label">公开文件</span>
-                        <div class="value">{{ publicCount }}</div>
-                        <div class="progress-mini">
-                            <div class="bar"
-                                :style="{ width: privacyPublicPercent + '%', background: 'var(--color-success)' }">
-                            </div>
-                        </div>
-                    </div>
+            <div class="metric-card glass-card">
+                <div class="metric-icon-wrapper secondary">
+                    <el-icon>
+                        <Service />
+                    </el-icon>
                 </div>
+                <div class="metric-content">
+                    <span class="label">存储占用</span>
+                    <div class="value">{{ formatSize(totalSize) }}</div>
+                    <div class="sub">平均：{{ formatSize(avgSize) }}</div>
+                </div>
+            </div>
 
-                <div class="metric-card glass-card">
-                    <div class="metric-icon-wrapper warning">
-                        <el-icon>
-                            <Lock />
-                        </el-icon>
-                    </div>
-                    <div class="metric-content">
-                        <span class="label">密钥文件</span>
-                        <div class="value">{{ keyCount }}</div>
-                        <div class="progress-mini">
-                            <div class="bar"
-                                :style="{ width: privacyKeyPercent + '%', background: 'var(--color-warning)' }"></div>
+            <div class="metric-card glass-card">
+                <div class="metric-icon-wrapper success">
+                    <el-icon>
+                        <View />
+                    </el-icon>
+                </div>
+                <div class="metric-content">
+                    <span class="label">公开文件</span>
+                    <div class="value">{{ publicCount }}</div>
+                    <div class="progress-mini">
+                        <div class="bar"
+                            :style="{ width: privacyPublicPercent + '%', background: 'var(--color-success)' }">
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="metric-card glass-card">
+                <div class="metric-icon-wrapper warning">
+                    <el-icon>
+                        <Lock />
+                    </el-icon>
+                </div>
+                <div class="metric-content">
+                    <span class="label">密钥文件</span>
+                    <div class="value">{{ keyCount }}</div>
+                    <div class="progress-mini">
+                        <div class="bar"
+                            :style="{ width: privacyKeyPercent + '%', background: 'var(--color-warning)' }"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Middle: Overview -->
-        <div class="section-block two-columns">
-            <div class="column-item">
-                <div class="panel-card glass-card">
-                    <div class="panel-header">
-                        <h3>存储概览</h3>
-                        <el-button link type="primary" @click="fetchFiles">
-                            <el-icon>
-                                <Refresh />
+        <section class="charts-section">
+            <div class="panel-card glass-card">
+                <div class="panel-header">
+                    <h3>存储概览</h3>
+                    <el-button link type="primary" @click="fetchFiles">
+                        <el-icon>
+                            <Refresh />
+                        </el-icon>
+                    </el-button>
+                </div>
+                <div class="overview-grid">
+                    <div class="overview-item">
+                        <div class="overview-title">
+                            <el-icon class="icon-img">
+                                <Picture />
                             </el-icon>
-                        </el-button>
+                            <span>图片</span>
+                        </div>
+                        <el-progress :percentage="typePercent.images" :stroke-width="6"
+                            :color="'var(--color-primary)'" />
+                        <div class="overview-sub">{{ imagesCount }} 个</div>
                     </div>
-                    <div class="overview-grid">
-                        <div class="overview-item">
-                            <div class="overview-title">
-                                <el-icon class="icon-img">
-                                    <Picture />
-                                </el-icon>
-                                <span>图片</span>
-                            </div>
-                            <el-progress :percentage="typePercent.images" :stroke-width="6"
-                                :color="'var(--color-primary)'" />
-                            <div class="overview-sub">{{ imagesCount }} 个</div>
+                    <div class="overview-item">
+                        <div class="overview-title">
+                            <el-icon class="icon-vid">
+                                <VideoCamera />
+                            </el-icon>
+                            <span>视频</span>
                         </div>
-                        <div class="overview-item">
-                            <div class="overview-title">
-                                <el-icon class="icon-vid">
-                                    <VideoCamera />
-                                </el-icon>
-                                <span>视频</span>
-                            </div>
-                            <el-progress :percentage="typePercent.videos" :stroke-width="6"
-                                :color="'var(--color-secondary)'" />
-                            <div class="overview-sub">{{ videosCount }} 个</div>
+                        <el-progress :percentage="typePercent.videos" :stroke-width="6"
+                            :color="'var(--color-secondary)'" />
+                        <div class="overview-sub">{{ videosCount }} 个</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-title">
+                            <el-icon class="icon-aud">
+                                <Service />
+                            </el-icon>
+                            <span>音频</span>
                         </div>
-                        <div class="overview-item">
-                            <div class="overview-title">
-                                <el-icon class="icon-aud">
-                                    <Service />
-                                </el-icon>
-                                <span>音频</span>
-                            </div>
-                            <el-progress :percentage="typePercent.audios" :stroke-width="6"
-                                :color="'var(--color-success)'" />
-                            <div class="overview-sub">{{ audiosCount }} 个</div>
+                        <el-progress :percentage="typePercent.audios" :stroke-width="6"
+                            :color="'var(--color-success)'" />
+                        <div class="overview-sub">{{ audiosCount }} 个</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-title">
+                            <el-icon class="icon-oth">
+                                <Document />
+                            </el-icon>
+                            <span>其他</span>
                         </div>
-                        <div class="overview-item">
-                            <div class="overview-title">
-                                <el-icon class="icon-oth">
-                                    <Document />
-                                </el-icon>
-                                <span>其他</span>
-                            </div>
-                            <el-progress :percentage="typePercent.others" :stroke-width="6"
-                                :color="'var(--color-info)'" />
-                            <div class="overview-sub">{{ othersCount }} 个</div>
-                        </div>
+                        <el-progress :percentage="typePercent.others" :stroke-width="6" :color="'var(--color-info)'" />
+                        <div class="overview-sub">{{ othersCount }} 个</div>
                     </div>
                 </div>
             </div>
 
-            <div class="column-item">
-                <div class="panel-card glass-card">
-                    <div class="panel-header">
-                        <h3>权限分布</h3>
-                        <el-button link type="primary" @click="fetchFiles">
-                            <el-icon>
-                                <Refresh />
-                            </el-icon>
-                        </el-button>
+            <div class="panel-card glass-card">
+                <div class="panel-header">
+                    <h3>权限分布</h3>
+                    <el-button link type="primary" @click="fetchFiles">
+                        <el-icon>
+                            <Refresh />
+                        </el-icon>
+                    </el-button>
+                </div>
+                <div class="privacy-grid">
+                    <div class="privacy-item">
+                        <div class="privacy-title">
+                            <span class="badge success">公开</span>
+                        </div>
+                        <div class="privacy-value">{{ publicCount }}</div>
+                        <el-progress :percentage="privacyPublicPercent" :stroke-width="6" status="success" />
                     </div>
-                    <div class="privacy-grid">
-                        <div class="privacy-item">
-                            <div class="privacy-title">
-                                <span class="badge success">公开</span>
-                            </div>
-                            <div class="privacy-value">{{ publicCount }}</div>
-                            <el-progress :percentage="privacyPublicPercent" :stroke-width="6" status="success" />
+                    <div class="privacy-item">
+                        <div class="privacy-title">
+                            <span class="badge warning">密钥保护</span>
                         </div>
-                        <div class="privacy-item">
-                            <div class="privacy-title">
-                                <span class="badge warning">密钥保护</span>
-                            </div>
-                            <div class="privacy-value">{{ keyCount }}</div>
-                            <el-progress :percentage="privacyKeyPercent" :stroke-width="6" status="warning" />
+                        <div class="privacy-value">{{ keyCount }}</div>
+                        <el-progress :percentage="privacyKeyPercent" :stroke-width="6" status="warning" />
+                    </div>
+                    <div class="privacy-item">
+                        <div class="privacy-title">
+                            <span class="badge info">已完成</span>
                         </div>
-                        <div class="privacy-item">
-                            <div class="privacy-title">
-                                <span class="badge info">已完成</span>
-                            </div>
-                            <div class="privacy-value">{{ completedPercent }}%</div>
-                            <el-progress :percentage="completedPercent" :stroke-width="6" />
-                        </div>
+                        <div class="privacy-value">{{ completedPercent }}%</div>
+                        <el-progress :percentage="completedPercent" :stroke-width="6" />
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- Bottom: Recent Files -->
-        <div class="section-block">
+        <section class="recent-section">
             <div class="panel-card glass-card no-padding">
                 <div class="panel-header padding">
                     <h3>最近文件</h3>
@@ -244,7 +237,7 @@ onMounted(() => {
                 <div v-if="recentFiles.length === 0" class="empty-list">暂无数据</div>
 
                 <div v-else class="responsive-table-wrapper">
-                    <el-table :data="recentFiles" style="width: 100%" class="transparent-table">
+                    <el-table :data="recentFiles" style="width: 100%" class="transparent-table" height="400">
                         <el-table-column prop="name" label="文件名" min-width="200">
                             <template #default="{ row }">
                                 <div class="file-name-cell">
@@ -275,27 +268,26 @@ onMounted(() => {
                     </el-table>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
 
 <style lang="scss" scoped>
 .dashboard-container {
     height: 100%;
-    padding: 20px;
+    padding: 24px;
     padding-bottom: 60px;
     overflow-y: auto;
-}
-
-.section-block {
-    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 /* Metric Cards */
-.metric-grid {
+.metrics-section {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 24px;
 }
 
 .metric-card {
@@ -304,9 +296,11 @@ onMounted(() => {
     align-items: flex-start;
     gap: 16px;
     transition: transform 0.2s;
+    background: var(--color-bg-secondary);
 
     &:hover {
         transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .metric-icon-wrapper {
@@ -320,12 +314,12 @@ onMounted(() => {
         flex-shrink: 0;
 
         &.primary {
-            background: rgba(6, 182, 212, 0.1);
+            background: var(--color-primary-light);
             color: var(--color-primary);
         }
 
         &.secondary {
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(124, 58, 237, 0.1);
             color: var(--color-secondary);
         }
 
@@ -365,7 +359,7 @@ onMounted(() => {
 
         .progress-mini {
             height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 2px;
             margin-top: 8px;
             overflow: hidden;
@@ -379,14 +373,10 @@ onMounted(() => {
 }
 
 /* Overview Panels */
-.two-columns {
+.charts-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-}
-
-.column-item {
-    height: 100%;
 }
 
 .panel-card {
@@ -395,14 +385,12 @@ onMounted(() => {
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
 
     &.no-padding {
         padding: 0;
-    }
-
-    /* Only fill height when inside a grid column to ensure alignment */
-    .column-item & {
-        height: 100%;
     }
 
     .panel-header {
@@ -439,7 +427,7 @@ onMounted(() => {
 }
 
 .overview-item {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-base);
     border-radius: 12px;
     padding: 16px;
     border: 1px solid var(--border-color);
@@ -489,7 +477,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-base);
     border-radius: 12px;
     padding: 16px;
     border: 1px solid var(--border-color);
@@ -510,28 +498,23 @@ onMounted(() => {
     font-weight: 600;
 
     &.success {
-        background: rgba(16, 185, 129, 0.2);
+        background: rgba(16, 185, 129, 0.1);
         color: var(--color-success);
     }
 
     &.warning {
-        background: rgba(245, 158, 11, 0.2);
+        background: rgba(245, 158, 11, 0.1);
         color: var(--color-warning);
     }
 
     &.info {
-        background: rgba(59, 130, 246, 0.2);
+        background: rgba(59, 130, 246, 0.1);
         color: var(--color-info);
     }
 }
 
 /* Table Styles */
 .transparent-table {
-    --el-table-bg-color: transparent;
-    --el-table-tr-bg-color: transparent;
-    --el-table-header-bg-color: rgba(255, 255, 255, 0.02);
-    --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.05);
-    --el-table-border-color: var(--border-color);
     background-color: transparent !important;
 }
 
@@ -565,13 +548,13 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 1200px) {
-    .metric-grid {
+    .metrics-section {
         grid-template-columns: 1fr 1fr;
     }
 }
 
 @media (max-width: 900px) {
-    .two-columns {
+    .charts-section {
         grid-template-columns: 1fr;
     }
 
@@ -583,10 +566,16 @@ onMounted(() => {
 @media (max-width: 600px) {
     .dashboard-container {
         padding: 16px;
+        gap: 16px;
     }
 
-    .metric-grid {
+    .metrics-section {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .charts-section {
+        gap: 16px;
     }
 
     .overview-grid {

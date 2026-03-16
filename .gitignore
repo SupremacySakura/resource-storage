@@ -23,4 +23,4 @@ secrets/*
 !secrets/example
 
 
-
+.trae/skills/ui-ux-pro-max/scripts/__pycache__

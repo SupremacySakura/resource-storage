@@ -137,8 +137,8 @@ const handleLogin = async () => {
         width: 100%;
         height: 100%;
         background-image:
-            linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
         background-size: 40px 40px;
         mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
     }
@@ -147,7 +147,7 @@ const handleLogin = async () => {
         position: absolute;
         border-radius: 50%;
         filter: blur(80px);
-        opacity: 0.4;
+        opacity: 0.3;
         animation: float 10s infinite ease-in-out;
     }
 
@@ -171,12 +171,10 @@ const handleLogin = async () => {
 }
 
 @keyframes float {
-
     0%,
     100% {
         transform: translate(0, 0);
     }
-
     50% {
         transform: translate(30px, 50px);
     }
@@ -200,14 +198,14 @@ const handleLogin = async () => {
     .logo-circle {
         width: 64px;
         height: 64px;
-        background: rgba(255, 255, 255, 0.05);
+        background: #fff;
         border-radius: 16px;
         display: flex;
         justify-content: center;
         align-items: center;
         margin: 0 auto 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 20px var(--color-primary-glow);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
         svg {
             width: 32px;
@@ -234,8 +232,10 @@ const handleLogin = async () => {
 .login-card {
     width: 100%;
     padding: 40px;
-    background: rgba(30, 41, 59, 0.6); // Override specific for login
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid #fff;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
 }
 
 .login-header {
@@ -272,7 +272,7 @@ const handleLogin = async () => {
     input {
         width: 100%;
         height: 48px;
-        background: rgba(15, 23, 42, 0.6);
+        background: #fff;
         border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 0 16px;
@@ -288,8 +288,7 @@ const handleLogin = async () => {
         &:focus {
             outline: none;
             border-color: var(--color-primary);
-            background: rgba(15, 23, 42, 0.8);
-            box-shadow: 0 0 0 1px var(--color-primary-glow);
+            box-shadow: 0 0 0 3px var(--color-primary-glow);
         }
     }
 }
@@ -323,14 +322,14 @@ const handleLogin = async () => {
     transition: color 0.2s;
 
     &:hover {
-        color: #22d3ee; // Lighter cyan
+        color: #06b6d4;
     }
 }
 
 .login-button {
     width: 100%;
     height: 48px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, #0891b2 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #06b6d4 100%);
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -343,7 +342,7 @@ const handleLogin = async () => {
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 20px var(--color-primary-glow);
+        box-shadow: 0 4px 12px var(--color-primary-glow);
     }
 
     &:active {

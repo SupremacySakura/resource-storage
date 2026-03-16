@@ -202,7 +202,7 @@ const copyKey = async () => {
 
 .op-left {
     width: 200px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--color-bg-base);
     border-right: 1px solid var(--border-color);
     flex-shrink: 0;
     padding: 16px 8px;
@@ -223,12 +223,12 @@ const copyKey = async () => {
 }
 
 .nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
     color: var(--color-text-primary);
 }
 
 .nav-item.active {
-    background-color: rgba(6, 182, 212, 0.1);
+    background-color: var(--color-primary-light);
     color: var(--color-primary);
     font-weight: 600;
 }
@@ -281,17 +281,17 @@ const copyKey = async () => {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: var(--color-bg-base);
 }
 
 .role-option:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-primary);
+    background-color: #fff;
 }
 
 .role-option.active {
     border-color: var(--color-primary);
-    background-color: rgba(6, 182, 212, 0.1);
+    background-color: var(--color-primary-light);
 }
 
 .role-icon {
@@ -371,7 +371,7 @@ const copyKey = async () => {
 }
 
 .key-result-box {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--color-bg-base);
     padding: 20px;
     border-radius: 8px;
     border: 1px dashed var(--border-color);
@@ -388,7 +388,7 @@ const copyKey = async () => {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(0, 0, 0, 0.3);
+    background: #fff;
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid var(--border-color);

@@ -95,7 +95,7 @@ onUnmounted(() => {
             </div>
 
             <el-main class="main-content">
-                <div class="page-container glass-card">
+                <div class="page-container">
                     <router-view v-slot="{ Component }">
                         <transition name="fade" mode="out-in">
                             <component :is="Component" />
@@ -114,8 +114,8 @@ onUnmounted(() => {
     overflow: hidden;
     background-color: var(--color-bg-base);
     background-image:
-        radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+        radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.05), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.05), transparent 25%);
 }
 
 .content-wrapper {
@@ -132,6 +132,8 @@ onUnmounted(() => {
     margin: 12px 12px 0 12px;
     z-index: 40;
     border-radius: 12px;
+    background: var(--color-bg-glass);
+    border: 1px solid #fff;
 
     .header-left {
         display: flex;
@@ -148,8 +150,8 @@ onUnmounted(() => {
         border-radius: 8px;
         color: var(--color-text-primary);
         cursor: pointer;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        border: 1px solid var(--border-color);
 
         &:active {
             transform: scale(0.95);
@@ -178,7 +180,7 @@ onUnmounted(() => {
         flex: 1;
         overflow: hidden;
         position: relative;
-        background: rgba(30, 41, 59, 0.4); // More transparent
+        background: transparent;
     }
 }
 

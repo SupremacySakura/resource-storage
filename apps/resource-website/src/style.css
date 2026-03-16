@@ -3,39 +3,57 @@
   --font-family-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Color Palette - Deep Space / Tech Theme */
-  --color-bg-base: #0b1120;       /* Deepest blue/black */
-  --color-bg-secondary: #1e293b;  /* Slightly lighter blue/grey */
-  --color-bg-glass: rgba(30, 41, 59, 0.7); /* Glassmorphism background */
-  
+  /* Color Palette - Light / Clean Tech Theme */
+  --color-bg-base: #f8fafc;
+  /* Slate-50 */
+  --color-bg-secondary: #ffffff;
+  /* White */
+  --color-bg-glass: rgba(255, 255, 255, 0.8);
+  /* Glassmorphism background */
+
   /* Accents */
-  --color-primary: #06b6d4;       /* Cyan */
-  --color-primary-glow: rgba(6, 182, 212, 0.5);
-  --color-secondary: #8b5cf6;     /* Purple */
-  --color-secondary-glow: rgba(139, 92, 246, 0.5);
-  
+  --color-primary: #0891b2;
+  /* Cyan-600 */
+  --color-primary-light: #ecfeff;
+  /* Cyan-50 */
+  --color-primary-glow: rgba(8, 145, 178, 0.15);
+  --color-secondary: #7c3aed;
+  /* Violet-600 */
+  --color-secondary-glow: rgba(124, 58, 237, 0.15);
+
   /* Status Colors */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
+  --color-success: #059669;
+  /* Emerald-600 */
+  --color-warning: #d97706;
+  /* Amber-600 */
+  --color-danger: #dc2626;
+  /* Red-600 */
+  --color-info: #2563eb;
+  /* Blue-600 */
 
   /* Text Colors */
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #64748b;
+  --color-text-primary: #0f172a;
+  /* Slate-900 */
+  --color-text-secondary: #475569;
+  /* Slate-600 */
+  --color-text-tertiary: #94a3b8;
+  /* Slate-400 */
 
   /* Borders & Shadows */
-  --border-color: rgba(148, 163, 184, 0.1);
-  --border-glow: 0 0 10px rgba(6, 182, 212, 0.2);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --border-color: #e2e8f0;
+  /* Slate-200 */
+  --border-glow: 0 0 10px rgba(8, 145, 178, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-glass: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
 
-  /* Element Plus Overrides Variables (to be used in components) */
+  /* Element Plus Overrides Variables */
   --el-color-primary: var(--color-primary);
-  --el-bg-color: var(--color-bg-base);
+  --el-bg-color: var(--color-bg-secondary);
   --el-text-color-primary: var(--color-text-primary);
   --el-text-color-regular: var(--color-text-secondary);
   --el-border-color: var(--border-color);
+  --el-fill-color-blank: var(--color-bg-secondary);
 }
 
 body {
@@ -46,7 +64,7 @@ body {
   font-family: var(--font-family-base);
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 #app {
@@ -54,7 +72,7 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
-  text-align: left; /* Reset text align */
+  text-align: left;
 }
 
 /* Custom Scrollbar */
@@ -64,16 +82,18 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-base);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-bg-secondary);
+  background: #cbd5e1;
+  /* Slate-300 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: #94a3b8;
+  /* Slate-400 */
 }
 
 /* Global Glass Card Class */
@@ -81,7 +101,7 @@ body {
   background: var(--color-bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #ffffff;
   border-radius: 16px;
   box-shadow: var(--shadow-glass);
 }
@@ -92,27 +112,34 @@ body {
   color: #fff;
 }
 
-/* Reset Element Plus styles for dark theme compatibility */
+/* Element Plus Overrides for Light Theme */
 .el-card {
   --el-card-bg-color: var(--color-bg-secondary);
   --el-card-border-color: var(--border-color);
   color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .el-table {
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(255, 255, 255, 0.02);
-  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.05);
+  --el-table-header-bg-color: #f1f5f9;
+  /* Slate-100 */
+  --el-table-row-hover-bg-color: #f8fafc;
+  /* Slate-50 */
   --el-table-border-color: var(--border-color);
   color: var(--color-text-primary);
 }
 
-.el-button--primary {
-  --el-button-bg-color: var(--color-primary);
+.el-table th.el-table__cell {
+  background-color: #f1f5f9;
+  /* Slate-100 */
+  color: var(--color-text-secondary);
+  font-weight: 600;
   --el-button-border-color: var(--color-primary);
-  --el-button-hover-bg-color: #0891b2;
-  --el-button-hover-border-color: #0891b2;
+  --el-button-hover-bg-color: #06b6d4;
+  /* Cyan-500 */
+  --el-button-hover-border-color: #06b6d4;
 }
 
 /* Fade Transition */
@@ -124,4 +151,8 @@ body {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.el-message {
+  z-index: 10000 !important;
 }

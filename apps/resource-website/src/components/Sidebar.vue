@@ -3,10 +3,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
     User,
-    Expand,
     Monitor,
-    ArrowDown,
-    Fold
+    ArrowDown
 } from '@element-plus/icons-vue'
 
 const props = defineProps<{
@@ -68,39 +66,39 @@ const sidebarWidth = computed(() => {
                     </div>
                     <span class="logo-text">资源<span class="highlight">存储</span></span>
                 </div>
-                
+
                 <!-- Desktop Toggle -->
                 <div v-if="!isMobile" class="toggle-btn" @click="toggleCollapse">
-                    <el-icon>
-                        <Expand v-if="isCollapse" />
-                        <Fold v-else />
-                    </el-icon>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
 
                 <!-- Mobile Close -->
-                <div v-if="isMobile" class="toggle-btn" @click="emit('close')">
-                    <el-icon><Fold /></el-icon>
-                </div>
+                <button v-if="isMobile" class="toggle-btn" type="button" aria-label="关闭侧边栏" @click="emit('close')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
 
-            <!-- Custom Menu -->
+            <!-- Menu Items -->
             <div class="menu-container">
-                <div v-for="item in props.menuItems" :key="item.path" class="menu-group">
-                    <!-- Menu Item -->
+                <div v-for="(item, index) in menuItems" :key="index" class="menu-group">
                     <div class="menu-item" :class="{
                         'is-active': isActive(item.path),
                         'collapsed': !isMobile && isCollapse
                     }" @click="handleMenuClick(item)">
                         
                         <div class="active-indicator"></div>
-
+                        
                         <el-icon class="menu-icon">
                             <component :is="item.icon" />
                         </el-icon>
-
-                        <span v-if="isMobile || !isCollapse" class="menu-title">{{ item.title }}</span>
                         
-                        <!-- Tooltip for collapsed mode -->
+                        <span v-if="!isCollapse || isMobile" class="menu-title">{{ item.title }}</span>
+                        
+                        <!-- Tooltip for collapsed state -->
                         <div v-if="!isMobile && isCollapse" class="menu-tooltip">
                             {{ item.title }}
                         </div>
@@ -111,7 +109,7 @@ const sidebarWidth = computed(() => {
             <!-- User Info -->
             <div class="user-container">
                 <el-dropdown trigger="click" class="user-dropdown" :class="{ 'collapsed': !isMobile && isCollapse }">
-                    <div class="user-info">
+                    <button class="user-info" type="button" aria-label="用户菜单">
                         <div class="avatar-wrapper">
                             <el-avatar :size="32" :icon="User" class="custom-avatar" />
                             <div class="status-dot"></div>
@@ -123,9 +121,9 @@ const sidebarWidth = computed(() => {
                         <el-icon v-show="isMobile || !isCollapse" class="el-icon--right">
                             <ArrowDown />
                         </el-icon>
-                    </div>
+                    </button>
                     <template #dropdown>
-                        <el-dropdown-menu class="custom-dropdown">
+                        <el-dropdown-menu>
                             <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -137,7 +135,6 @@ const sidebarWidth = computed(() => {
 
 <style lang="scss" scoped>
 .sidebar-wrapper {
-    height: 100%;
     transition: all 0.3s ease;
     z-index: 50;
 
@@ -147,15 +144,16 @@ const sidebarWidth = computed(() => {
         left: 0;
         height: 100vh;
         z-index: 100;
-        pointer-events: none; // Allow clicks through when closed
+        pointer-events: none;
 
         .aside {
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             border-radius: 0 16px 16px 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
             border-left: none;
+            background: var(--color-bg-secondary);
         }
 
         .sidebar-backdrop {
@@ -164,7 +162,7 @@ const sidebarWidth = computed(() => {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(4px);
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -187,19 +185,15 @@ const sidebarWidth = computed(() => {
 }
 
 .aside {
-    background: rgba(15, 23, 42, 0.85); // Darker glass
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    overflow-x: visible; // Allow tooltips
+    overflow-x: visible;
     height: 100%;
-    
-    // Remove default element plus border
-    border: none; 
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    border: none;
+    box-shadow: none;
+    background: var(--color-bg-glass);
+    border-right: 1px solid var(--border-color);
 
     // Custom Sidebar Header
     .sidebar-header {
@@ -210,7 +204,7 @@ const sidebarWidth = computed(() => {
         padding: 0 20px;
         color: var(--color-text-primary);
         flex-shrink: 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid var(--border-color);
 
         .logo-area {
             display: flex;
@@ -221,17 +215,17 @@ const sidebarWidth = computed(() => {
             .logo-icon-wrapper {
                 width: 36px;
                 height: 36px;
-                background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+                background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
                 border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 12px var(--color-primary-glow);
             }
 
             .logo-icon {
                 font-size: 20px;
-                color: var(--color-primary);
+                color: #fff;
             }
 
             .logo-text {
@@ -239,6 +233,7 @@ const sidebarWidth = computed(() => {
                 font-weight: 700;
                 white-space: nowrap;
                 letter-spacing: -0.5px;
+                color: var(--color-text-primary);
                 
                 .highlight {
                     color: var(--color-primary);
@@ -256,22 +251,13 @@ const sidebarWidth = computed(() => {
             height: 32px;
             border-radius: 8px;
             transition: all 0.2s;
+            border: 1px solid transparent;
+            background: transparent;
+            padding: 0;
 
             &:hover {
-                background-color: rgba(255, 255, 255, 0.05);
+                background-color: rgba(0, 0, 0, 0.05);
                 color: var(--color-text-primary);
-            }
-        }
-    }
-
-    &.collapsed {
-        .sidebar-header {
-            justify-content: center;
-            padding: 0;
-            
-            .toggle-btn {
-                width: 40px;
-                height: 40px;
             }
         }
     }
@@ -281,10 +267,6 @@ const sidebarWidth = computed(() => {
         overflow-y: auto;
         overflow-x: hidden;
         padding: 16px 12px;
-
-        .menu-group {
-            margin-bottom: 4px;
-        }
 
         .menu-item {
             position: relative;
@@ -298,37 +280,34 @@ const sidebarWidth = computed(() => {
             color: var(--color-text-secondary);
             transition: all 0.2s ease;
             white-space: nowrap;
+            width: 100%;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left;
 
             &:hover {
-                background-color: rgba(255, 255, 255, 0.03);
+                background-color: rgba(0, 0, 0, 0.03);
                 color: var(--color-text-primary);
-                
+
                 .menu-icon {
                     color: var(--color-text-primary);
-                    transform: scale(1.1);
                 }
             }
 
             &.is-active {
-                background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+                background: var(--color-primary-light);
                 color: var(--color-primary);
                 font-weight: 600;
 
                 .menu-icon {
                     color: var(--color-primary);
-                    filter: drop-shadow(0 0 5px var(--color-primary-glow));
-                }
-
-                .active-indicator {
-                    height: 20px;
-                    opacity: 1;
                 }
             }
 
             &.collapsed {
                 justify-content: center;
                 padding: 0;
-                
+
                 .menu-icon {
                     margin-right: 0;
                 }
@@ -346,12 +325,15 @@ const sidebarWidth = computed(() => {
                 top: 50%;
                 transform: translateY(-50%);
                 width: 3px;
-                height: 0;
+                height: 20px;
                 background-color: var(--color-primary);
                 border-radius: 0 4px 4px 0;
-                box-shadow: 0 0 10px var(--color-primary);
                 opacity: 0;
                 transition: all 0.3s ease;
+            }
+
+            &.is-active .active-indicator {
+                opacity: 1;
             }
 
             .menu-icon {
@@ -363,7 +345,6 @@ const sidebarWidth = computed(() => {
 
             .menu-title {
                 font-size: 14px;
-                flex: 1;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -373,8 +354,8 @@ const sidebarWidth = computed(() => {
                 left: 100%;
                 top: 50%;
                 transform: translateY(-50%) translateX(10px);
-                background: var(--color-bg-secondary);
-                color: var(--color-text-primary);
+                background: var(--color-text-primary);
+                color: #fff;
                 padding: 6px 12px;
                 border-radius: 6px;
                 font-size: 12px;
@@ -383,8 +364,7 @@ const sidebarWidth = computed(() => {
                 visibility: hidden;
                 transition: all 0.2s ease;
                 z-index: 100;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 pointer-events: none;
                 margin-left: 10px;
 
@@ -396,7 +376,7 @@ const sidebarWidth = computed(() => {
                     transform: translateY(-50%);
                     border-width: 4px 4px 4px 0;
                     border-style: solid;
-                    border-color: transparent var(--color-bg-secondary) transparent transparent;
+                    border-color: transparent var(--color-text-primary) transparent transparent;
                 }
             }
         }
@@ -404,8 +384,8 @@ const sidebarWidth = computed(() => {
 
     .user-container {
         padding: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid var(--border-color);
+        background: transparent;
 
         .user-dropdown {
             width: 100%;
@@ -417,20 +397,29 @@ const sidebarWidth = computed(() => {
                 padding: 8px;
                 border-radius: 12px;
                 transition: background-color 0.2s;
-                border: 1px solid transparent;
+                border: 1px solid var(--border-color);
+                background: #fff;
+                text-align: left;
 
                 &:hover {
-                    background-color: rgba(255, 255, 255, 0.03);
-                    border-color: rgba(255, 255, 255, 0.05);
+                    background-color: rgba(0, 0, 0, 0.02);
+                    border-color: var(--color-primary);
+                }
+
+                &:focus-visible {
+                    outline: 2px solid var(--color-primary);
+                    outline-offset: 2px;
                 }
 
                 .avatar-wrapper {
                     position: relative;
-                    
+                    width: 32px;
+                    height: 32px;
+                    flex-shrink: 0;
+
                     .custom-avatar {
-                        background: var(--color-bg-secondary);
-                        color: var(--color-text-secondary);
-                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        background: var(--color-primary-light);
+                        color: var(--color-primary);
                     }
 
                     .status-dot {
@@ -441,7 +430,7 @@ const sidebarWidth = computed(() => {
                         height: 8px;
                         background-color: var(--color-success);
                         border-radius: 50%;
-                        border: 2px solid var(--color-bg-base);
+                        border: 2px solid #fff;
                     }
                 }
 

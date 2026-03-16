@@ -17,28 +17,30 @@ const close = () => {
 </script>
 
 <template>
-    <transition name="dialog-fade">
-        <div v-if="modelValue" class="custom-dialog-overlay" @click.self="close">
-            <div class="custom-dialog glass-card" :style="{ width: width || '500px' }">
-                <div class="dialog-header">
-                    <span class="dialog-title">{{ title }}</span>
-                    <button class="close-btn" @click="close">
-                        <el-icon>
-                            <Close />
-                        </el-icon>
-                    </button>
-                </div>
+    <Teleport to="body">
+        <transition name="dialog-fade">
+            <div v-if="modelValue" class="custom-dialog-overlay" @click.self="close">
+                <div class="custom-dialog glass-card" :style="{ width: width || '500px' }">
+                    <div class="dialog-header">
+                        <span class="dialog-title">{{ title }}</span>
+                        <button class="close-btn" @click="close">
+                            <el-icon>
+                                <Close />
+                            </el-icon>
+                        </button>
+                    </div>
 
-                <div class="dialog-body">
-                    <slot></slot>
-                </div>
+                    <div class="dialog-body">
+                        <slot></slot>
+                    </div>
 
-                <div v-if="$slots.footer" class="dialog-footer">
-                    <slot name="footer"></slot>
+                    <div v-if="$slots.footer" class="dialog-footer">
+                        <slot name="footer"></slot>
+                    </div>
                 </div>
             </div>
-        </div>
-    </transition>
+        </transition>
+    </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -48,18 +50,19 @@ const close = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
     /* Ensure high z-index to overlay everything */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    z-index: 2000;
 }
 
 @media (max-width: 600px) {
     .custom-dialog-overlay {
-        z-index: 9999;
+        z-index: 2000;
     }
 }
 
@@ -67,7 +70,7 @@ const close = () => {
     background: var(--color-bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
@@ -105,7 +108,7 @@ const close = () => {
     transition: all 0.2s;
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 0, 0, 0.05);
         color: var(--color-text-primary);
     }
 }

@@ -249,7 +249,7 @@ const uploadAll = async () => {
 }
 
 .custom-input :deep(.el-input__wrapper) {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #fff;
     box-shadow: none;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -258,11 +258,10 @@ const uploadAll = async () => {
 }
 
 .custom-input :deep(.el-input__wrapper:hover) {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--color-primary);
 }
 
 .custom-input :deep(.el-input__wrapper.is-focus) {
-    background-color: rgba(255, 255, 255, 0.08);
     border-color: var(--color-primary);
     box-shadow: 0 0 0 1px var(--color-primary-glow);
 }
@@ -273,7 +272,7 @@ const uploadAll = async () => {
 
 /* Drop Zone */
 .drop-zone {
-    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border: 1px dashed var(--border-color);
     padding: 60px 20px;
     text-align: center;
     cursor: pointer;
@@ -281,18 +280,20 @@ const uploadAll = async () => {
     margin-bottom: 32px;
     position: relative;
     overflow: hidden;
+    background-color: var(--color-bg-secondary);
+    border-radius: 16px;
 }
 
 .drop-zone:hover,
 .drop-zone.is-dragging {
     border-color: var(--color-primary);
-    background: rgba(6, 182, 212, 0.05);
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+    background: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
 
     .icon-circle {
         transform: scale(1.1);
         color: var(--color-primary);
-        background: rgba(6, 182, 212, 0.1);
+        background: #fff;
     }
 }
 
@@ -313,7 +314,7 @@ const uploadAll = async () => {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--color-bg-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -355,29 +356,29 @@ const uploadAll = async () => {
 .top-left {
     top: -1px;
     left: -1px;
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
 }
 
 .top-right {
     top: -1px;
     right: -1px;
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
-    border-right: 2px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid transparent;
+    border-right: 2px solid transparent;
 }
 
 .bottom-left {
     bottom: -1px;
     left: -1px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid transparent;
+    border-left: 2px solid transparent;
 }
 
 .bottom-right {
     bottom: -1px;
     right: -1px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    border-right: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid transparent;
+    border-right: 2px solid transparent;
 }
 
 /* Action Bar */
@@ -425,13 +426,14 @@ const uploadAll = async () => {
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.05);
+    background: #fff;
     color: var(--color-text-secondary);
     border: 1px solid var(--border-color);
 
     &:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--color-bg-base);
         color: var(--color-text-primary);
+        border-color: var(--color-text-secondary);
     }
 }
 
@@ -452,10 +454,14 @@ const uploadAll = async () => {
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
 
     &:hover {
         transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-sm);
     }
 }
 
@@ -467,7 +473,7 @@ const uploadAll = async () => {
     justify-content: center;
     font-size: 32px;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-base);
     border-radius: 8px;
 }
 
@@ -529,7 +535,7 @@ const uploadAll = async () => {
 /* Progress Bar */
 .progress-track {
     height: 4px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--color-bg-base);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -585,7 +591,7 @@ const uploadAll = async () => {
     flex-shrink: 0;
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--color-bg-base);
         color: var(--color-text-primary);
     }
 }

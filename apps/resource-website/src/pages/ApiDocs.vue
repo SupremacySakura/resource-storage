@@ -358,7 +358,7 @@ const toggleSection = (title: string) => {
     padding: 0 10px;
     border-radius: 999px;
     border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-base);
     color: var(--color-text-primary);
     font-size: 12px;
     font-weight: 600;
@@ -406,6 +406,8 @@ const toggleSection = (title: string) => {
 .section {
     border-radius: 14px;
     overflow: hidden;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border-color);
 }
 
 .section-summary {
@@ -416,7 +418,8 @@ const toggleSection = (title: string) => {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--color-bg-secondary);
 }
 
 .section-summary::-webkit-details-marker {
@@ -448,8 +451,8 @@ const toggleSection = (title: string) => {
     justify-content: center;
     border-radius: 10px;
     color: var(--color-text-secondary);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-base);
+    border: 1px solid var(--border-color);
     transform: rotate(0deg);
     transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease;
     flex-shrink: 0;
@@ -458,7 +461,7 @@ const toggleSection = (title: string) => {
 .chevron.open {
     transform: rotate(90deg);
     color: var(--color-text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-base);
 }
 
 .endpoint-list {
@@ -466,13 +469,14 @@ const toggleSection = (title: string) => {
     flex-direction: column;
     gap: 12px;
     padding: 12px 14px 14px;
+    background: var(--color-bg-base);
 }
 
 .endpoint-card {
     padding: 14px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--color-bg-secondary);
 }
 
 .endpoint-head {
@@ -481,7 +485,7 @@ const toggleSection = (title: string) => {
     justify-content: space-between;
     gap: 12px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .endpoint-left {
@@ -530,7 +534,7 @@ const toggleSection = (title: string) => {
     margin: 0;
     padding: 10px 12px;
     border-radius: 10px;
-    background: rgba(15, 23, 42, 0.6);
+    background: var(--color-bg-base);
     border: 1px solid var(--border-color);
     color: var(--color-text-primary);
     overflow: auto;

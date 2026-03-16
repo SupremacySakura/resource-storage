@@ -128,12 +128,12 @@ const handleClose = () => {
 }
 
 .badge.success {
-    background-color: rgba(16, 185, 129, 0.2);
+    background-color: rgba(16, 185, 129, 0.1);
     color: var(--color-success);
 }
 
 .badge.warning {
-    background-color: rgba(245, 158, 11, 0.2);
+    background-color: rgba(245, 158, 11, 0.1);
     color: var(--color-warning);
 }
 
@@ -148,7 +148,7 @@ const handleClose = () => {
 .progress-bar {
     flex: 1;
     height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--color-bg-base);
     border-radius: 3px;
     overflow: hidden;
 }
@@ -169,7 +169,7 @@ const handleClose = () => {
 
 .code-block {
     font-family: var(--font-family-mono);
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--color-bg-base);
     padding: 10px 12px;
     border-radius: 6px;
     font-size: 13px;
