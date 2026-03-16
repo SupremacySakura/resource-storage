@@ -215,6 +215,28 @@ FRONTEND_DOMAIN=my-site.com FRONTEND_PORT=8080 BACKEND_PORT=4000 docker-compose 
 - **URL**: `/file/all`
 - **Method**: `GET`
 
+#### 按条件分页获取文件列表
+- **URL**: `/file/some`
+- **Method**: `GET`
+- **Query**:
+  - `page`: 页码（默认 1）
+  - `pageSize`: 每页条数（默认 10）
+  - `keyword`: (可选) 关键词，匹配 name/path/type/hash/role
+  - `filter`: (可选) 类型筛选：`all | document | image | video`
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "获取文件列表成功",
+    "data": {
+      "items": [],
+      "total": 0,
+      "page": 1,
+      "pageSize": 10
+    }
+  }
+  ```
+
 #### 获取文件内容 (下载/预览)
 - **URL**: `/file/read`
 - **Method**: `GET`

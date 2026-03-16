@@ -146,8 +146,39 @@ Content-Type: application/json
         endpoints: [
             {
                 method: 'GET',
+                path: '/file/some',
+                title: '按条件分页获取文件列表',
+                auth: 'bearer',
+                requestExample: `GET ${apiBase.value}/file/some?page=1&pageSize=10&keyword=png&filter=image
+Authorization: Bearer <token>`,
+                responseExample: `{
+  "success": true,
+  "message": "获取文件列表成功",
+  "data": {
+    "items": [
+      {
+        "hash": "<sha256>",
+        "name": "example.png",
+        "path": "./",
+        "role": "public | key",
+        "key": "<uuid?>",
+        "type": "file",
+        "size": 123,
+        "chunkCount": 1,
+        "chunks": [{ "index": 0, "hash": "<sha256>" }],
+        "modifiedTime": "..."
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "pageSize": 10
+  }
+}`,
+            },
+            {
+                method: 'GET',
                 path: '/file/all',
-                title: '获取文件列表',
+                title: '获取全部文件列表（不分页）',
                 auth: 'bearer',
                 requestExample: `GET ${apiBase.value}/file/all
 Authorization: Bearer <token>`,
