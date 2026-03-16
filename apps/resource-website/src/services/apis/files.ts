@@ -96,6 +96,25 @@ export const getFileList = async (token: string) => {
     return data
 }
 
+export const getFileListByCondition = async (
+    params: { page: number; pageSize: number; keyword?: string; filter?: 'all' | 'document' | 'image' | 'video' },
+    token: string
+) => {
+    const searchParams = new URLSearchParams()
+    searchParams.set('page', String(params.page))
+    searchParams.set('pageSize', String(params.pageSize))
+    if (params.keyword) searchParams.set('keyword', params.keyword)
+    if (params.filter) searchParams.set('filter', params.filter)
+
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/some?${searchParams.toString()}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    })
+    const data = await res.json()
+    return data
+}
+
 export const updateFilePermission = async (fileHash: string, role: 'public' | 'key', token: string) => {
     const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/file/update-permission`, {
         method: 'POST',

@@ -116,7 +116,7 @@ export class FileStorageService {
 
         const filePath = path.resolve(this.fileDir, meta.path, meta.name)
         if (fs.existsSync(filePath)) return 'EXIST'
-        if(!fs.existsSync(path.resolve(this.fileDir, meta.path))) fs.mkdirSync(path.resolve(this.fileDir, meta.path),{ recursive: true })
+        if (!fs.existsSync(path.resolve(this.fileDir, meta.path))) fs.mkdirSync(path.resolve(this.fileDir, meta.path), { recursive: true })
         const chunks = meta.chunks.sort((a, b) => a.index - b.index)
 
         const writeStream = fs.createWriteStream(filePath)
@@ -187,6 +187,69 @@ export class FileStorageService {
             }
         }
         return result
+    }
+
+    queryFiles(params: { page: number; pageSize: number; keyword?: string; filter?: 'all' | 'document' | 'image' | 'video' }) {
+        const page = Number.isFinite(params.page) ? Math.max(1, Math.floor(params.page)) : 1
+        const pageSize = Number.isFinite(params.pageSize) ? Math.max(1, Math.floor(params.pageSize)) : 10
+        const keyword = (params.keyword || '').trim().toLowerCase()
+        const filter = params.filter || 'all'
+
+        const allFiles = this.listFiles() as FileItem[]
+
+        const filtered = keyword
+            ? allFiles.filter((item) => {
+                const haystacks = [
+                    item.hash,
+                    item.name,
+                    item.path,
+                    item.type,
+                    item.role,
+                ]
+                    .filter((v) => typeof v === 'string' && v.length > 0)
+                    .map((v) => v.toLowerCase())
+
+                return haystacks.some((v) => v.includes(keyword))
+            })
+            : allFiles
+
+        const getExt = (filename: string) => {
+            const base = filename.split('/').pop() || filename
+            const idx = base.lastIndexOf('.')
+            if (idx === -1) return ''
+            return base.slice(idx + 1).toLowerCase()
+        }
+
+        const isImageExt = (ext: string) => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'ico'].includes(ext)
+        const isVideoExt = (ext: string) => ['mp4', 'webm', 'mov', 'mkv', 'avi', 'flv', 'm4v'].includes(ext)
+        const isAudioExt = (ext: string) => ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a'].includes(ext)
+
+        const typeFiltered = filter === 'all'
+            ? filtered
+            : filtered.filter((item) => {
+                const ext = getExt(item.name)
+                if (filter === 'image') return isImageExt(ext)
+                if (filter === 'video') return isVideoExt(ext)
+                if (filter === 'document') return !isImageExt(ext) && !isVideoExt(ext) && !isAudioExt(ext)
+                return true
+            })
+
+        const sorted = typeFiltered.sort((a, b) => {
+            const aTime = Number.isFinite(Date.parse(a.modifiedTime)) ? Date.parse(a.modifiedTime) : 0
+            const bTime = Number.isFinite(Date.parse(b.modifiedTime)) ? Date.parse(b.modifiedTime) : 0
+            return bTime - aTime
+        })
+
+        const total = sorted.length
+        const start = (page - 1) * pageSize
+        const end = start + pageSize
+
+        return {
+            items: sorted.slice(start, end),
+            total,
+            page,
+            pageSize,
+        }
     }
 
     updateFilePermission(hash: string, role: 'public' | 'key') {

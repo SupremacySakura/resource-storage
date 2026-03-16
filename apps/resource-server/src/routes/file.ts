@@ -98,6 +98,32 @@ router.get('/all', authMiddleware(), async (ctx) => {
     }
 })
 
+router.get('/some', authMiddleware(), async (ctx) => {
+    try {
+        const { page, pageSize, keyword, filter } = ctx.query as any
+
+        const parsedPage = Number.parseInt(String(page ?? '1'), 10)
+        const parsedPageSize = Number.parseInt(String(pageSize ?? '10'), 10)
+        const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+        const safePageSize = Number.isFinite(parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : 10
+
+        const safeFilter = filter === 'all' || filter === 'document' || filter === 'image' || filter === 'video'
+            ? filter
+            : undefined
+
+        const data = storage.queryFiles({
+            page: safePage,
+            pageSize: Math.min(safePageSize, 200),
+            keyword: typeof keyword === 'string' ? keyword : undefined,
+            filter: safeFilter,
+        })
+
+        ctx.body = { success: true, message: '获取文件列表成功', data }
+    } catch (e: any) {
+        ctx.body = { success: false, message: e.message }
+    }
+})
+
 // 修改文件权限
 router.post('/update-permission', authMiddleware(), async (ctx) => {
     try {

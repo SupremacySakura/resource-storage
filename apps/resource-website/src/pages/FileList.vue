@@ -5,9 +5,9 @@ import {
     Document, View, Download, Search,
     Picture, VideoCamera, Service, MoreFilled, InfoFilled
 } from '@element-plus/icons-vue'
-import { getFileList, updateFilePermission, generateKey, deleteFile } from '../services/apis/files'
+import { getFileListByCondition, updateFilePermission, generateKey, deleteFile } from '../services/apis/files'
 import { useUserStore } from '../stores/user'
-import { getFileIcon, isImageExt, isVideoExt, isTextExt, getIconColor, formatSize, getExt, isAudioExt } from '../utils/file'
+import { getFileIcon, isImageExt, isVideoExt, isTextExt, getIconColor, formatSize, getExt } from '../utils/file'
 import { formatDate } from '../utils/common'
 import type { FileItem } from '../types/file'
 import FileOperationDialog from '../components/FileOperationDialog.vue'
@@ -18,6 +18,7 @@ const userStore = useUserStore()
 const fileList = ref<FileItem[]>([])
 const selectedFile = ref<FileItem | null>(null)
 const loading = ref(false)
+const total = ref(0)
 
 // Dialogs
 const operationVisible = ref(false)
@@ -57,9 +58,15 @@ onUnmounted(() => {
 const fetchFiles = async () => {
     loading.value = true
     try {
-        const res = await getFileList(userStore.token)
+        const res = await getFileListByCondition({
+            page: currentPage.value,
+            pageSize: pageSize.value,
+            keyword: searchQuery.value || undefined,
+            filter: currentFilter.value,
+        }, userStore.token)
         if (res.success) {
-            fileList.value = res.data
+            fileList.value = res.data?.items || []
+            total.value = Number(res.data?.total || 0)
         } else {
             ElMessage.error(res.message || '获取文件列表失败')
         }
@@ -71,43 +78,13 @@ const fetchFiles = async () => {
     }
 }
 
-const filteredFiles = computed(() => {
-    let result = fileList.value
-
-    // Search
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        result = result.filter(f =>
-            f.name.toLowerCase().includes(query) ||
-            f.path.toLowerCase().includes(query)
-        )
-    }
-
-    // Filter
-    if (currentFilter.value !== 'all') {
-        result = result.filter(f => {
-            const ext = getExt(f.name)
-            if (currentFilter.value === 'image') return isImageExt(ext)
-            if (currentFilter.value === 'video') return isVideoExt(ext)
-            if (currentFilter.value === 'document') return !isImageExt(ext) && !isVideoExt(ext) && !isAudioExt(ext)
-            return true
-        })
-    }
-
-    return result
-})
-
-const pagedFiles = computed(() => {
-    const start = (currentPage.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    return filteredFiles.value.slice(start, end)
-})
-
-const totalFiltered = computed(() => filteredFiles.value.length)
-
 watch([currentFilter, searchQuery], () => {
     currentPage.value = 1
-})
+}, { flush: 'sync' })
+
+watch([currentPage, pageSize, currentFilter, searchQuery], () => {
+    fetchFiles()
+}, { flush: 'post' })
 
 const previewUrl = computed(() => {
     if (!selectedFile.value) return ''
@@ -254,7 +231,7 @@ const doDeleteFile = async () => {
 
 // Summary Data
 const totalSize = computed(() => fileList.value.reduce((sum, f) => sum + Number(f.size || 0), 0))
-const totalCount = computed(() => fileList.value.length)
+const totalCount = computed(() => total.value)
 const publicCount = computed(() => fileList.value.filter(f => f.role === 'public').length)
 </script>
 
@@ -301,7 +278,7 @@ const publicCount = computed(() => fileList.value.filter(f => f.role === 'public
 
         <!-- Data Table -->
         <div class="table-card">
-            <el-table :data="pagedFiles" style="width: 100%" class="custom-table">
+            <el-table :data="fileList" style="width: 100%" class="custom-table">
                 <el-table-column label="Name" min-width="250">
                     <template #default="{ row }">
                         <div class="file-name-cell">
@@ -364,7 +341,7 @@ const publicCount = computed(() => fileList.value.filter(f => f.role === 'public
 
             <!-- Pagination -->
             <div class="pagination-footer">
-                <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="totalFiltered"
+                <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total"
                     :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next" background small />
             </div>
         </div>
